@@ -1,0 +1,34 @@
+
+<odoo>
+    <record id="view_file_upload_form" model="ir.ui.view">
+        <field name="name">file.upload.form</field>
+        <field name="model">file.upload</field>
+        <field name="arch" type="xml">
+            <form string="Importer des pesées">
+                <sheet>
+                    <group>
+
+                        <field name="file_data" filename="file_name"/>
+
+
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_file_upload" model="ir.actions.act_window">
+        <field name="name">decryptage</field>
+        <field name="res_model">file.upload</field>
+        <field name="view_mode">form</field>
+
+<!--        <field name="target">new</field>-->
+    </record>
+
+    <!-- This Menu Item will appear in the Upper bar, That's why It needs NO parent or action -->
+
+<menuitem id="menu_file_upload_categ"
+          name="decrypter un fichier"
+          action="action_file_upload"
+          parent="menu_weigh"  sequence="1"/>
+</odoo>

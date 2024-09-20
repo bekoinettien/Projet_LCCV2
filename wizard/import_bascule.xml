@@ -1,0 +1,432 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="planting_weight_form_view" model="ir.ui.view">
+            <field name="name">planting.weight.form</field>
+            <field name="model">weight.weight</field>
+            <field name="arch" type="xml">
+                <form string="List of Weight">
+                    <header>
+                        <button name="action_confirm" string="Valider" class="oe_highlight" invisible="state not in 'draft'" type="object"/>
+                        <button name="cancel" string="Annuler" class="btn-danger" invisible =" state not in 'done'" type="object"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,done"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name"/>
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group string="Partenaire">
+                                <field name="code_farmer" readonly="1" invisible = " state != 'draft'"/>
+                                <field name="supplier_id" invisible = "state != 'draft'"/>
+                                <field name="weigth_supplier" readonly="1"/>
+                                <field name="first_weigher" readonly="1"/>
+                            </group>
+                            <group string="Detail pésée">
+                                <field name="date" readonly="1"/>
+                                <field name="code_product" readonly="1" invisible = " state != 'draft'"/>
+                                <field name="product_id" invisible = " state != 'done'"/>
+                                <field name="weigth_1" readonly="1"/>
+                                <field name="weigth_2" readonly="1"/>
+                                <field name="origine" readonly="1"/>
+                                <field name="aire" readonly="1"/>
+                                <field name="qty" readonly="1" style="color:#ce1131"/>
+<!--                                <field name="qty1" readonly="1" style="color:#391fbf"/>-->
+                            </group>
+                        </group>
+                        <group>
+                            <group string="Informations Transporteur">
+                                 <field name="driver" readonly="1"/>
+                                <field name="carrier" readonly="1"/>
+                            </group>
+                            <group string="Autres informations">
+                                 <field name="locality" readonly="1"/>
+                                <field name="sector" readonly="1"/>
+                                <field name="village" readonly="1"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="planting_weight_tree_view" model="ir.ui.view">
+            <field name="name">planting_weight.tree</field>
+            <field name="model">weight.weight</field>
+            <field name="arch" type="xml">
+                <tree string="List of Weight" limit="200">
+                    <field name="name"/>
+                    <field name="code_farmer" invisible = "state != 'draft'"/>
+                    <field name="supplier_id" invisible = "state != 'done'"/>
+                    <field name="date"/>
+                    <field name="code_product" invisible = "state != 'draft'"/>
+                    <field name="product_id" optional="show" invisible = "state != 'done'"/>
+                    <field name="weigth_1" optional="hide"/>
+                    <field name="weigth_2" optional="hide"/>
+                    <field name="weigth_supplier" optional="hide"/>
+                    <field name="origine"/>
+                    <field name="aire" />
+                    <field name="qty" sum="Total"/>
+<!--                    <field name="qty1" sum="Total"/>-->
+                    <field name="state" widget="badge" decoration-success="state == 'done'" decoration-danger="state == 'draft'"/>
+                    <field name="first_weigher" optional="hide"/>
+                    <field name="driver" optional="hide"/>
+                    <field name="carrier" optional="hide"/>
+                </tree>
+            </field>
+        </record>
+
+
+        <record id="planting_weight_graph_view" model="ir.ui.view">
+            <field name="name">planting.weight.graph</field>
+            <field name="model">weight.weight</field>
+            <field name="arch" type="xml">
+                <graph string="ModelTitle">
+                    <field name="supplier_id"/>
+                    <field name="qty" type="measure"/>
+<!--                    <field name="qty1" type="measure"/>-->
+                </graph>
+            </field>
+        </record>
+
+        <record id="planting_weight_pivot_view" model="ir.ui.view">
+            <field name="name">planting_weight.pivot</field>
+            <field name="model">weight.weight</field>
+            <field name="arch" type="xml">
+                <pivot string="ModelTitle">
+                    <field name="supplier_id" type="row"/>
+                    <field name="date" type="row"/>
+                    <field name="qty" type="measure"/>
+<!--                    <field name="qty1" type="measure"/>-->
+                </pivot>
+            </field>
+        </record>
+
+        <record id="planting_weight_search_view" model="ir.ui.view">
+            <field name="name">planting_weight.search</field>
+            <field name="model">weight.weight</field>
+            <field name="arch" type="xml">
+                <search string="ModelTitle">
+                    <field name="name"/>
+                    <field name="locality"/>
+                    <field name="village"/>
+                    <field name="supplier_id"/>
+<!--                    <field name="driver_id"/>-->
+                    <separator/>
+                    <filter string="A traiter" name="draft" domain="[('state','=','draft')]"/>
+                    <filter string="Valider" name="done" domain="[('state','=','done')]"/>
+                    <group expand="1" string="Group By">
+                        <filter string="Planteur" name="suppliers" domain="[]"
+                                context="{'group_by':'supplier_id'}"/>
+<!--                        <filter string="Transporteurs" name="drivers" domain="[]"-->
+<!--                                context="{'group_by':'driver_id'}"/>-->
+                        <filter string="Région" name="locality" domain="[]"
+                                context="{'group_by':'locality'}"/>
+                         <filter string="Etat" name="state" domain="[]" context="{'group_by':'state'}"/>
+                        <filter string="Peseur" name="weigher" domain="[]"
+                                context="{'group_by':'first_weigher'}"/>
+                         <filter string="Date" name="dates" domain="[]"
+                                context="{'group_by':'date'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+<!--        debut formulaire prime exceptionnelle-->
+
+                <record id="prime_exceptionnelle_view_form" model="ir.ui.view">
+                    <field name="name">prime_exceptionnelle_view_form</field>
+                    <field name="model">prime.exceptionnelle</field>
+                    <field name="arch" type="xml">
+                         <form string="_form">
+                            <sheet>
+                                <group>
+                                 <group>
+                                     <field name="name"/>
+                                     <field name="activate"/>
+                                     <field name="seuil"/>
+                                      <field name="prix1"/>
+                                     <field name="prix2"/>
+                                </group>
+                                <group>
+                                     <group>
+                                         <field name="start_date"/>
+                                         <field name="end_date"/>
+                                         <field name="Prime"/>
+
+                                     </group>
+                                 </group>
+                                </group>
+                            </sheet>
+                            <notebook>
+                                <page string="Groupe exceptionelle 1">
+                                <field name="weight_ids"/>
+                                    <tree>
+                                        <field name="qty"/>
+                                        <field name="code_farmer"/>
+                                        <field name="supplier_id"/>
+                                    </tree>
+                                </page>
+                            </notebook>
+                        </form>
+
+                    </field>
+                </record>
+
+                <record id="prime_exceptionnelle_view_tree" model="ir.ui.view">
+                    <field name="name">prime_exceptionnelle_view_tree</field>
+                    <field name="model">prime.exceptionnelle</field>
+                    <field name="arch" type="xml">
+                        <tree string="Primes Exceptionnelles">
+
+                                     <field name="name"/>
+                                     <field name="activate"/>
+                                     <field name="seuil"/>
+                                     <field name="Prime"/>
+                                     <field name="prix1"/>
+                                     <field name="start_date"/>
+                                     <field name="end_date"/>
+                                     <field name="prix2"/>
+                        </tree>
+                    </field>
+                </record>
+        <record id="prime_exceptionnelle_act_window" model="ir.actions.act_window">
+            <field name="name">Prime Exceptionnelle</field>
+            <field name="res_model">prime.exceptionnelle</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+        <menuitem id="prime_exceptionnelle_menu" parent="menu_root_plantation" action="prime_exceptionnelle_act_window" sequence="999"/>
+
+        <!--        FIN formulaire prime exceptionnelle-->
+
+        <!--        debut formulaire groupe prime exceptionnelle-->
+
+        <record id="prime_prime_view_tree" model="ir.ui.view">
+            <field name="name">prime_prime_view_tree</field>
+            <field name="model">prime.prime</field>
+            <field name="arch" type="xml">
+                <tree string="prime_prime_tree">
+                    <field name="name"/>
+                    <field name="seuil"/>
+                    <field name="price1"/>
+                    <field name="price2"/>
+                    <field name="farmer_ids"/>
+                </tree>
+            </field>
+        </record>
+        <record id="prime_prime_view_form" model="ir.ui.view">
+            <field name="name">prime_prime_view_form</field>
+            <field name="model">prime.prime</field>
+            <field name="arch" type="xml">
+                <form string="prime_prime_form">
+                    <sheet>
+                        <group>
+                            <field name="name"/>
+                            <field name="seuil"/>
+                            <field name="price1"/>
+                            <field name="price2"/>
+                        </group>
+                        <notebook>
+                            <page string="Planteurs">
+                                <field name="farmer_ids" widget="many2many" domain="[('farmer','=',True)]"/>
+                            </page>
+                            <page string="Selection Prime">
+                                <field name="line_selection_ids" readonly="1"/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        <record id="prime_prime_act_window" model="ir.actions.act_window">
+            <field name="name">Groupe de Prime Exceptionnelle</field>
+            <field name="res_model">prime.prime</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+        <menuitem id="prime_prime_menu" parent="prime_exceptionnelle_menu" action="prime_prime_act_window" sequence="2"/>
+
+        <!--        FIN formulaire group prime exceptionnelle-->
+
+        <!--        debut formulaire selection prime exceptionnelle-->
+
+        <record id="selection_selection_view_form" model="ir.ui.view">
+            <field name="name">_view_form</field>
+            <field name="model">selection.selection</field>
+            <field name="arch" type="xml">
+                <form string="_form">
+                    <sheet>
+                        <group>
+                            <field name="active" widget='boolean_toggle' options="{'terminology': 'activation'}"/>
+                            <field name="name"/>
+                            <field name="datedebut"/>
+                            <field name="datefin"/>
+
+                        </group>
+                    </sheet>
+                    <notebook>
+                        <page string="Groupe de Prime Exceptionnelle">
+                            <group>
+                                <field name="prime_id"/>
+
+                            </group>
+                        </page>
+                    </notebook>
+                </form>
+            </field>
+        </record>
+        <record id="selection_selection_view_tree" model="ir.ui.view">
+            <field name="name">selection_selection_view_tree</field>
+            <field name="model">selection.selection</field>
+            <field name="arch" type="xml">
+                <tree string="selection_selection_tree">
+                            <field name="active"/>
+                            <field name="name"/>
+                            <field name="datedebut"/>
+                            <field name="datefin"/>
+                </tree>
+            </field>
+        </record>
+<!--      debut  filtrer les activer et non activer-->
+        <record id="view_selection_filter" model="ir.ui.view">
+            <field name="name">selection.selection.filter</field>
+            <field name="model">selection.selection</field>
+            <field name="arch" type="xml">
+                <search>
+                    <filter string="Activé" name="filter_active" domain="[('active', '=', True)]"/>
+                    <filter string="Désactivé" name="filter_inactive" domain="[('active', '=', False)]"/>
+                    <filter string="Tous" name="filter_all" domain="[]"/>
+                </search>
+            </field>
+        </record>
+        <!--      fin  filtrer les activer et non activer-->
+
+        <record id="selection_selection_act_window" model="ir.actions.act_window">
+            <field name="name">Selection de groupe Prime</field>
+            <field name="res_model">selection.selection</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+                <menuitem id="selection_selection_menu" parent="prime_exceptionnelle_menu" action="selection_selection_act_window" sequence="3"/>
+
+        <!--        FIN formulaire selection prime exceptionnelle-->
+
+
+
+        <!-- Vue form pour le modèle Paiement -->
+    <record id="view_paiement_form" model="ir.ui.view">
+    <field name="name">view_paiement.form</field>
+    <field name="model">paiement.paiement</field>
+    <field name="arch" type="xml">
+        <form string="Payment">
+            <header>
+                <button name="action_pay" type="object" string="Marquer comme Payé" invisible= 'state != "draft"' class="btn-primary"/>
+                <button name="action_cancel" type="object" string="Annuler" invisible= 'state != "draft"' class="btn-danger"/>
+                <button name="action_draft" type="object" string="Revenir au Brouillon" invisible="state not in('paid','cancelled')"  class="btn-secondary"/>
+                <field name="state" widget='statusbar' statusbar_visible='draft,paid,cancelled'/>
+                <widget name="web_ribbon" title="Payé"  bg_color="bg-success"
+                                invisible="state != 'cancelled'"/>
+            </header>
+            <sheet>
+                <group>
+                    <field name="name"/>
+                    <field name="group_id"/>
+
+                    <field name="date_from"/>
+                    <field name="date_to"/>
+
+
+                </group>
+                <field name="payment_line_ids" context="{'default_payment_id': active_id}">
+                    <tree editable="bottom">
+                        <field name="code_farmer"/>
+                        <field name="farmer_id"/>
+
+                        <field name="total_weight"/>
+<!--                        <field name="price" invisible="1"/>-->
+                        <field name="amount"/>
+                        <field name="acc_number" invisible="1"/>
+                            <field name="bank_id" invisible="1"/>
+                            <field name="myp_id" invisible="1"/>
+                    </tree>
+
+                </field>
+            </sheet>
+
+        </form>
+    </field>
+</record>
+        <record id="view_validated_payment_tree" model="ir.ui.view">
+            <field name="name">validated.payment.tree</field>
+            <field name="model">validated.payment</field>
+            <field name="arch" type="xml">
+                <tree string="Paiements Validés" limit="15000000">
+                    <field name="payment_id"/>
+                    <field name="code_farmer"/>
+                    <field name="farmer_id"/>
+                    <field name="total_weight"/>
+                    <field name="price"/>
+                    <field name="amount"/>
+                    <field name="acc_number" />
+                    <field name="bank_id" />
+                    <field name="myp_id" />
+<!--                    <button name="action_print_receipt" string="Imprimer Reçu" type="object" class="btn-primary" icon="fa-print"/>-->
+                </tree>
+            </field>
+        </record>
+
+         <record id="validated_payment_act_window" model="ir.actions.act_window">
+            <field name="name">Bulletin Prime Exceptionnelle</field>
+            <field name="res_model">validated.payment</field>
+            <field name="view_mode">tree</field>
+        </record>
+        <menuitem id="validated_payment_menu" parent="prime_exceptionnelle_menu" action="validated_payment_act_window" sequence="5"/>
+
+
+    <!-- Action pour le modèle Paiement -->
+    <record id="action_paiement" model="ir.actions.act_window">
+        <field name="name">Paiements</field>
+        <field name="res_model">paiement.paiement</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                Créer un nouveau paiement
+            </p>
+        </field>
+    </record>
+<!--    rapport prime exceptionnelle-->
+    <record id ="action_prime_exceptionelle" model="ir.actions.report">
+       <field name="name">Prime Exceptionnelle</field>
+        <field name="model">validated.payment</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">plantation.report_paiement_bulletin</field>
+        <field name="print_report_name">'Bulletin de Paiement - %s' % (object.name)</field>
+
+    </record>
+
+
+    <!-- Menu pour les Paiements -->
+
+    <menuitem id="menu_paiement" name="Paiements" parent="prime_exceptionnelle_menu" action="action_paiement" sequence="4"/>
+
+        <!--        FIN formulaire paiement prime exceptionnelle-->
+
+
+        <record id="planting_weight_draft_act_window" model="ir.actions.act_window">
+            <field name="name">Import pesée</field>
+            <field name="res_model">weight.weight</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('state','=','draft')]</field>
+        </record>
+        <!-- This Menu Item Must have a parent -->
+            <menuitem id="planting_weight_draft_menu" parent="menu_weigh" action="planting_weight_draft_act_window" sequence="2"/>
+
+        <record id="planting_weight_act_window" model="ir.actions.act_window">
+            <field name="name">Toutes les Pesées</field>
+            <field name="res_model">weight.weight</field>
+            <field name="view_mode">tree,form,graph,pivot</field>
+        </record>
+
+        <menuitem id="planting_weight_menu" parent="menu_weigh" action="planting_weight_act_window" sequence="3"/>
+    </data>
+</odoo>

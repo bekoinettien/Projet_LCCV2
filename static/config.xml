@@ -1,0 +1,383 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!--################ ACCOUNTING  ##############-->
+        <record id="plantation_accounting_view_tree" model="ir.ui.view">
+            <field name="name">accounting.plantation.tree</field>
+            <field name="model">planting.account.move</field>
+            <field name="arch" type="xml">
+                <tree string="Accounting" create="0" decoration-bf="type not in ('G','A')" limit="15000000">
+                    <field name="journal_code"/>
+                    <field name="payslip_date"/>
+                    <field name="number_move"/>
+                    <field name="invoice"/>
+                    <field name="ref"/>
+                    <field name="account_code"/>
+                    <!--field name="account_id" optional="hide"/-->
+                    <field name="partner_account"/>
+                    <field name="name"/>
+                    <field name="date_due"/>
+                    <field name="debit"/>
+                    <field name="credit"/>
+                    <field name="analytic"/>
+                    <field name="type"/>
+                </tree>
+            </field>
+        </record>
+        <record id="action_plantation_accounting" model="ir.actions.act_window">
+             <field name="name">Ecriture Comptable</field>
+             <field name="res_model">planting.account.move</field>
+             <field name="view_mode">tree</field>
+        </record>
+         This Menu Item must have a parent and an action
+        <menuitem id="menu_plantation_accounting" parent="menu_reports" action="action_plantation_accounting" sequence="10"/>
+
+        <!--################ LOCALITY  ##############-->
+        <record id="plantation_view_tree_locality" model="ir.ui.view">
+            <field name="name">locality.plantation.tree</field>
+            <field name="model">locality.locality</field>
+            <field name="arch" type="xml">
+                <tree string="Locality" editable="bottom">
+                    <field name="name"/>
+                    <field name="sector_ids" widget="many2many_tags"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_plantation_locality" model="ir.actions.act_window">
+             <field name="name">Région</field>
+             <field name="res_model">locality.locality</field>
+             <field name="view_mode">tree</field>
+             <field name="help" type="html">
+                 <p class="o_view_nocontent_smiling_face">
+                    Créer une localité
+                 </p>
+             </field>
+        </record>
+
+        <!--################ SECTOR  ##############-->
+        <record id="plantation_view_tree_sector" model="ir.ui.view">
+            <field name="name">sector.sector.tree</field>
+            <field name="model">sector.sector</field>
+            <field name="arch" type="xml">
+                <tree string="Département Plantation" editable="bottom">
+                    <field name="name"/>
+                    <field name="locality_id" required="1"/>
+                     <field name="code"/>
+                    <field name="seq_id" optional="hide"/>
+                    <field name="village_ids" widget="many2many_tags"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_plantation_sector" model="ir.actions.act_window">
+             <field name="name">Département</field>
+             <field name="res_model">sector.sector</field>
+             <field name="view_mode">tree</field>
+             <field name="help" type="html">
+                 <p class="o_view_nocontent_smiling_face">
+                    Créer un seteur
+                 </p>
+             </field>
+        </record>
+        <!--################ VILLAGE ##############-->
+         <record id="plantation_view_tree_village" model="ir.ui.view">
+            <field name="name">village.farmer.tree</field>
+            <field name="model">farmer.village</field>
+            <field name="arch" type="xml">
+                <tree string="village de Plantation" editable="bottom">
+                    <field name="name"/>
+                    <field name="sector_id" required="1"/>
+                    <field name="plantation_ids"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_plantation_village" model="ir.actions.act_window">
+             <field name="name">Village</field>
+             <field name="res_model">farmer.village</field>
+             <field name="view_mode">tree</field>
+             <field name="help" type="html">
+                 <p class="o_view_nocontent_smiling_face">
+                    Créer un village de plantation
+                 </p>
+             </field>
+        </record>
+
+        <!--################ FREQUENCY PAYROLL  ##############-->
+         <record id="plantation_view_tree_payroll_frequency" model="ir.ui.view">
+            <field name="name">payroll.frequency.tree</field>
+            <field name="model">frequency.payroll</field>
+            <field name="arch" type="xml">
+                <tree string="village de Plantation" editable="bottom">
+                    <field name="name"/>
+                    <field name="factor_day"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_plantation_frequency_payroll" model="ir.actions.act_window">
+             <field name="name">Frequence de paie</field>
+             <field name="res_model">frequency.payroll</field>
+             <field name="view_mode">tree</field>
+             <field name="help" type="html">
+                 <p class="o_view_nocontent_smiling_face">
+                    Créer une frequence de paiement
+                 </p>
+             </field>
+        </record>
+
+        <!--################ PAYMENT MODE  ##############-->
+        <record id="plantation_view_tree_payment" model="ir.ui.view">
+            <field name="name">payroll.payment.tree</field>
+            <field name="model">plantation.myp</field>
+            <field name="arch" type="xml">
+                <tree string="Payment" editable="bottom">
+                    <field name="name"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_plantation_mode_payment" model="ir.actions.act_window">
+             <field name="name">Mode de paiement</field>
+             <field name="res_model">plantation.myp</field>
+             <field name="view_mode">tree</field>
+             <field name="help" type="html">
+                 <p class="o_view_nocontent_smiling_face">
+                    Créer un mode de paiement
+                 </p>
+             </field>
+        </record>
+
+        <!--################ TYPE FARMER ##############-->
+        <record id="plantation_view_tree_type_farmer" model="ir.ui.view">
+            <field name="name">plantation.type.farmer</field>
+            <field name="model">type.farmer</field>
+            <field name="arch" type="xml">
+                <tree string="village de Plantation" editable="bottom">
+                    <field name="name"/>
+                    <field name="code"/>
+                    <field name="seq_id" invisible="1"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_plantation_type_farmer" model="ir.actions.act_window">
+             <field name="name">Type Planteur</field>
+             <field name="res_model">type.farmer</field>
+             <field name="view_mode">tree</field>
+             <field name="help" type="html">
+                 <p class="o_view_nocontent_smiling_face">
+                    Créer un type de planteur
+                 </p>
+             </field>
+        </record>
+
+
+        <!--################ PLATING PRICING  ##############-->
+        <record id="planting_pricing_tree_view" model="ir.ui.view">
+            <field name="name">planting_pricing.tree</field>
+            <field name="model">planting.pricing</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="name"/>
+                    <field name="date"/>
+                </tree>
+            </field>
+        </record>
+        <record id="planting_pricing_view_form" model="ir.ui.view">
+            <field name="name">planting.pricing.view_form</field>
+            <field name="model">planting.pricing</field>
+            <field name="arch" type="xml">
+                <form string="plating_pricing_form">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                            </group>
+                            <group>
+                                <field name="date"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Prix Planteur">
+                                <field name="line_ids">
+                                    <tree editable="bottom">
+                                        <field name="date" />
+                                        <field name="group_id"/>
+                                        <field name="price"/>
+
+                                        <!--################ price1 10/09/24  ##############-->
+                                        <field name="price_driver"/>
+                                        <field name="prime"/>
+                                        <field name="prime1"/>
+
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                     <!-- Chatter -->
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers" groups="base.group_user"/>
+                        <field name="activity_ids" widget="mail_activity"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <record id="planting_pricing_line_graph_view" model="ir.ui.view">
+            <field name="name">planting_pricing.graph</field>
+            <field name="model">planting.pricing.line</field>
+            <field name="arch" type="xml">
+                <graph string="ModelTitle">
+                    <field name="date"/>
+                    <field name="price" type="measure"/>
+                    <!--################ price1 10/09/24  ##############-->
+
+                </graph>
+            </field>
+        </record>
+
+        <record id="planting_pricing_pivot_line_view" model="ir.ui.view">
+            <field name="name">planting_pricing.pivot</field>
+            <field name="model">planting.pricing.line</field>
+            <field name="arch" type="xml">
+                <pivot string="ModelTitle">
+                    <field name="date" type="row"/>
+                    <field name="price" type="measure"/>
+                    <!--################ price1 10/09/24  ##############-->
+
+                </pivot>
+            </field>
+        </record>
+
+        <record id="planting_pricing_act_window" model="ir.actions.act_window">
+            <field name="name">Historique des prix Achat</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">planting.pricing</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Ajouter une tarification pour la paie planteur
+                </p>
+            </field>
+        </record>
+
+        <record id="config_tree_planting" model="ir.ui.view">
+        <field name="name">config.planting.tree</field>
+        <field name="model">config.payslip.planting</field>
+        <field name="arch" type="xml">
+            <tree string="Configuration" editable="bottom" create="0" delete="0">
+                <field name="name"/>
+                <field name="tax_bic"/>
+                <field name="number" />
+                <field name="default_frequency_id"/>
+                <field name="airsi"/>
+                <field name="aiph" optional="hide"/>
+                <field name="chph" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+    <record id="action_config_planting" model="ir.actions.act_window">
+        <field name="name">Configuration Plantation</field>
+        <field name="res_model">config.payslip.planting</field>
+        <field name="view_mode">tree</field>
+    </record>
+
+
+        <!-- This Menu Item must have a parent and an action -->
+<!--        <menuitem id="menu_plantation_categ" name="Plantation" parent="menu_planting" sequence="1"/>-->
+            <menuitem id="menu_locality_action" parent="menu_planting" action="action_plantation_locality" sequence="2"/>
+            <menuitem id="menu_sector_action" parent="menu_planting" action="action_plantation_sector" sequence="3"/>
+            <menuitem id="menu_village_action" parent="menu_planting" action="action_plantation_village" sequence="4"/>
+            <menuitem id="menu_type_farmer" parent="menu_farmer" action="action_plantation_type_farmer" sequence="2"/>
+
+        <menuitem id="menu_divers_categ" name="Divers" parent="menu_planting_config" sequence="2"/>
+            <menuitem id="menu_planting_mode_payment" parent="menu_divers_categ" action="action_plantation_mode_payment" sequence="1"/>
+            <menuitem id="menu_frequency_payroll" parent="menu_divers_categ" action="action_plantation_frequency_payroll" sequence="2"/>
+            <menuitem name="Historique des prix" id="planting_pricing_menu" parent="menu_farmer" action="planting_pricing_act_window" sequence="3"/>
+
+        <menuitem id="menu_config_bank_planting" name="Comptes Bancaires" parent="menu_farmer" sequence="100"/>
+            <menuitem id="menu_action_res_bank_planting" name="Banque" action="base.action_res_bank_form" parent="menu_config_bank_planting" sequence="1"/>
+            <menuitem id="menu_action_res_partner_bank_planting" name="Comptes Bancaires"
+                action="base.action_res_partner_bank_account_form" parent="menu_config_bank_planting" sequence="2"/>
+
+          <!-- This Menu Item must have a parent and an action -->
+        <menuitem id="menu_config_planting" parent="menu_planting_config" action="action_config_planting" sequence="100"/>
+
+<!--        ajouter 06/09.24-->
+
+    <!-- Form View for Journal Control -->
+
+
+<!--Mise a jour pour le journal 09/09/24-->
+<record id="action_planting_journal_control" model="ir.actions.act_window">
+    <field name="name">Journal de Contrôle</field>
+    <field name="res_model">planting.payslip.run</field>
+    <field name="view_mode">tree,form</field>
+
+    <field name="domain">[('state', '=', 'close')]</field>
+</record>
+
+
+
+        <menuitem id="menu_planting_accounting_report" parent="menu_reports" action="action_planting_journal_control" sequence="4"/>
+
+    <!-- Menu Item for Journal Control -->
+
+
+    <record id="view_planting_journal_control_tree" model="ir.ui.view">
+    <field name="name">planting.journal.control.tree</field>
+    <field name="model">planting.journal.control</field>
+    <field name="arch" type="xml">
+        <tree string="Journal de Contrôle">
+            <field name="name"/>
+            <field name="date_start"/>
+            <field name="date_end"/>
+            <field name="company_id"/>
+        </tree>
+    </field>
+</record>
+
+        <record id="view_planting_journal_control_form" model="ir.ui.view">
+    <field name="name">planting.journal.control.form</field>
+    <field name="model">planting.journal.control</field>
+    <field name="arch" type="xml">
+        <form string="Journal de Contrôle">
+            <sheet>
+                <group>
+                    <field name="name"/>
+                    <field name="date_start"/>
+                    <field name="date_end"/>
+                    <field name="company_id"/>
+                </group>
+                <notebook>
+                    <page string="Lignes du Journal de Contrôle">
+                        <field name="account_move_ids">
+                            <tree string="Lignes du Journal de Contrôle">
+                                <field name="journal_code"/>
+                                <field name="payslip_date"/>
+                                <field name="invoice"/>
+                                <field name="ref"/>
+                                <field name="account_code"/>
+                                <field name="partner_account"/>
+                                <field name="name"/>
+                                <field name="date_due"/>
+                                <field name="debit"/>
+                                <field name="credit"/>
+                                <field name="analytic"/>
+                                <field name="type"/>
+                            </tree>
+                        </field>
+                    </page>
+                </notebook>
+            </sheet>
+        </form>
+    </field>
+</record>
+
+
+    </data>
+</odoo>

@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+   <report
+            string="Bulletin Planteur"
+            id="action_report_payslip_farmer"
+            model="planting.payslip"
+            report_type="qweb-pdf"
+            name="plantation.report_payslip_farmer"
+            file="plantation.report_payslip_farmer"
+            print_report_name="'Bulletin de paie - %s' % (object.partner_id.name)"
+        />
+    <template id="report_payslip_farmer">
+        <t t-call="web.html_container">
+        <t t-foreach="docs" t-as="o">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <style>
+                         * { font-size: 13px; }
+                            .bordered { border: 2px solid #000; padding: 5px; }
+                            p.text-center { font-size: 20px; text-transform: uppercase; }
+                            table { background-color: #fff; text-align: center; }
+                            table th { text-align: center; }
+                    </style> <br/><br/><br/>
+
+                    <div class="row"><br/><br/><br/>
+
+
+                        <div ><br/><br/><br/>
+                             <h4 class="text-center" >
+                                <t> REVENU DU PLANTEUR</t>
+                                  <h4 class="text-center"><strong>Periode Debut : <span t-field="o.date_from"/></strong> AU <strong>Periode Fin : <span t-field="o.date_to"/></strong></h4>
+                             </h4>
+                        </div>
+                    </div><br/>
+<!--                    MISE A JOUR BEKOIN 06/9/24-->
+                        <div class="row">
+                            <div class="col-6" style="border: 1px solid #000; padding: 10px; border-radius: 15px;">
+                                <h4>
+                                   <t> IDENTIFICATION PLANTATION</t>
+                                </h4>
+                                <p><strong>PLANTATION: <span t-field="o.partner_id.plantation_ids.name"/></strong>... <strong>TYPE: <span t-field="o.partner_id.type_id.name"/></strong></p>
+                                <p><strong>Sous.R.Achat : DAOUKRO</strong>... <strong>R.Achat : DAOUKRO</strong></p>
+                                <p><strong>Village : <span t-field="o.partner_id.plantation_ids.village_id.name"/></strong></p>
+<!--                                <p><strong>R.Achat : DAOUKRO</strong></p>-->
+                                <p><strong>Banque : <span t-field="o.bank_id"/></strong></p>
+<!--                                <p><strong>TYPE: <span t-field="o.partner_id.type_id.name"/></strong></p>-->
+                                <p><strong>Prix Apromac: <span t-field="o.prix_apromac"/></strong></p>
+                            </div><br/><br/>
+
+
+                             <div class="col-6" style="border: 1px solid #000; padding: 10px; border-radius: 15px;">
+                                 <h4>
+                                   <t> IDENTIFICATION PLANTEUR</t>
+                                </h4>
+                                 <p><strong>Code Planteur: <span t-field="o.partner_id.code_farmer"/></strong></p>
+                                 <p><strong>Nom : <span t-field="o.partner_id"/></strong></p>
+                                 <p><strong>N° CC : <span t-field="o.partner_id.vat"/></strong></p>
+                                 <p><strong>Téléphone : <span t-field="o.partner_id.phone"/></strong></p>
+                                 <p><strong>Email : <span t-field="o.partner_id.email"/></strong></p>
+
+                             </div><br/><br/>
+                        </div><br/><br/>
+
+                    <!-- #KONAN - 29-12-2023: Suppression des détails de livraison
+                    <table class="table table-sm table-condensed table-bordered"  style="text-align:center">
+                        <thead>
+                            <tr>
+                                <th>DATE LIVRAISON</th>
+                                <th>BASE</th>
+                                <th>PRIX UNITAIRE</th>
+                                <th>GAINS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="o.line_pesee_ids" t-as="p">
+                                <td><span t-field="p.date" /></td>
+                                <td><span t-field="p.qty" t-options='{"widget": "float", "precision": 0}'/></td>
+                                <td><span t-field="o.price" t-options='{"widget": "float", "precision": 0}'/></td>
+                                <td><span t-esc="o.price*p.qty" t-options='{"widget": "float", "precision": 0}'/></td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td><strong>TOTAL LIVRAISON</strong></td>
+                                <td colspan="2">
+                                    <strong t-esc="o.amount_pesee" />
+                                </td>
+                                <td>
+                                    <strong t-esc="o.amount_pesee*o.price"
+                                    t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                    FIN - Suppression des détails de livraison-->
+                    <table class="table table-sm table-bordered table-striped" style="text-align:center">
+                            <thead>
+                                <tr>
+                                    <th>Ref</th>
+                                    <th>Libellé</th>
+                                    <th>Quantité EUDR</th>
+                                    <th>Quantité NON EUDR</th>
+                                    <th>Prix</th>
+                                    <th>Gains</th>
+                                    <th>Retenues</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="o.line_ids.filtered(lambda line: line.appears_on_payslip)" t-as="line">
+                                    <td><span t-field="line.salary_rule_id.sequence"/></td>
+                                    <td style="width:200px;text-align:left">
+                                        <span t-field="line.salary_rule_id.name"/>
+                                    </td>
+                                    <!-- Quantité EUDR -->
+                                    <td>
+                                        <span t-if="line.salary_rule_id.name == 'Fond de tasse EUDR' " t-esc="line.slip_id.total_qty_eudr" t-options='{"widget": "float", "precision": 0}'/>
+                                        <span t-if="line.salary_rule_id.name == 'Prime EUDR' " t-esc="line.slip_id.total_qty_eudr" t-options='{"widget": "float", "precision": 0}'/>
+                                        <span t-if="line.salary_rule_id.name == 'Transport' " t-esc="line.slip_id.total_qty_eudr" t-options='{"widget": "float", "precision": 0}'/>
+                                        <span t-if="line.salary_rule_id.name == 'Fond Non EUDR' or line.salary_rule_id.name == 'Prime NON EUDR'" t-esc="0"/>
+                                    </td>
+                                    <!-- Quantité NON EUDR -->
+                                    <td>
+                                        <span t-if="line.salary_rule_id.name == 'Fond de tasse Non EUDR'" t-esc="line.slip_id.total_qty_non_eudr" t-options='{"widget": "float", "precision": 0}'/>
+                                        <span t-if="line.salary_rule_id.name == 'Prime NON EUDR'" t-esc="line.slip_id.total_qty_non_eudr" t-options='{"widget": "float", "precision": 0}'/>
+                                        <span t-if="line.salary_rule_id.name == 'Transport'" t-esc="line.slip_id.total_qty_non_eudr" t-options='{"widget": "float", "precision": 0}'/>
+                                        <span t-if="line.salary_rule_id.name == 'Fond de Tasse EUDR' or line.salary_rule_id.name == 'Prime EUDR'" t-esc="0"/>
+                                    </td>
+                                    <!-- Prix EUDR -->
+                                    <td>
+                                        <span t-if="line.salary_rule_id.name == 'Fond de tasse EUDR'" t-esc="line.slip_id.price" t-options='{"widget": "float", "precision": 0}'/>
+                                        <span t-if="line.salary_rule_id.name == 'Prime EUDR'" t-esc="line.slip_id.prime" t-options='{"widget": "float", "precision": 0}'/>
+                                        <span t-if="line.salary_rule_id.name == 'Transport'" t-esc="line.slip_id.price_driver" t-options='{"widget": "float", "precision": 0}'/>
+                                          <span t-if="line.salary_rule_id.name == 'Fond de tasse Non EUDR'" t-esc="line.slip_id.price" t-options='{"widget": "float", "precision": 0}'/>
+                                        <span t-if="line.salary_rule_id.name == 'Prime NON EUDR'" t-esc="line.slip_id.prime1" t-options='{"widget": "float", "precision": 0}'/>
+                        <!--                <span t-if="line.salary_rule_id.name == 'Fond Non EUDR' or line.salary_rule_id.name == 'Prime NON EUDR'" t-esc="0"/>-->
+                                    </td>
+                                    <!-- Prix NON EUDR -->
+                        <!--            <td>-->
+                        <!--                <span t-if="line.salary_rule_id.name == 'Fond de tasse Non EUDR'" t-esc="line.slip_id.price" t-options='{"widget": "float", "precision": 0}'/>-->
+                        <!--                <span t-if="line.salary_rule_id.name == 'Prime NON EUDR'" t-esc="line.slip_id.prime1" t-options='{"widget": "float", "precision": 0}'/>-->
+                        <!--                <span t-if="line.salary_rule_id.name == 'Transport'" t-esc="line.slip_id.price_driver" t-options='{"widget": "float", "precision": 0}'/>-->
+                        <!--                <span t-if="line.salary_rule_id.name == 'Fond de Tasse EUDR' or line.salary_rule_id.name == 'Prime EUDR'" t-esc="0"/>-->
+                        <!--            </td>-->
+                                    <!-- Gains -->
+                                    <td>
+                                        <span t-if="line.category_id.code=='BASE'" t-esc="line.amount" t-options='{"widget": "float", "precision": 0}'/>
+                                        <span t-if="line.category_id.code=='PRIME'" t-esc="line.total" t-options='{"widget": "float", "precision": 0}'/>
+                                    </td>
+                                    <!-- Retenues -->
+                                    <td>
+                                        <span t-if="line.category_id.code=='RETENUE'" t-esc="line.total" t-options='{"widget": "float", "precision": 0}'/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="4"><span>TOTAL </span></td>
+                                    <td><span t-esc="1+o.gains - o.gains" /></td>
+                                    <td><span t-esc="o.gains" t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}' /></td>
+                                    <td><span t-esc="o.returned" t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="5"><h4>NET A PAYER</h4></td>
+                                    <td>
+                                        <h4>
+                                            <span t-esc="o.amount_net" t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+                                        </h4>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+
+
+                </div>
+            </t>
+        </t>
+    </t>
+    </template>
+
+
+
+</odoo>

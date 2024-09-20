@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+	<data> <record id="plantation_code_product_inherit" model="ir.ui.view">
+            <field name="name">plantation.code.product.inherit</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="product.product_template_only_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='categ_id']" position="after">
+                    <field name="code"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="plantation_res_partner_inherit" model="ir.ui.view">
+            <field name="name">plantation.res.partner.inherit</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="arch" type="xml">
+                 <sheet>
+                    <group>
+                        <field name="farmer" invisible="1" string="Est un Planteur ?"/>
+                       <field name="struct_id" required ="farmer == True"/>
+		            <field name="group_id" required="1"/>
+		            <field name="type_id" required = "farmer == True" options="{'no_create': True}"/>
+                    </group>
+                    <group>
+                        <field name="myp_id" required = "farmer == True "/>
+		            <field name="number_aprocmac"/>
+                         <field name="code_farmer"/>
+<!--                        <field name="prime_id"/>-->
+                    </group>
+                </sheet>
+				<notebook position="inside">
+                    <page string="Plantations">
+                        <field name="plantation_ids">
+							<tree string="Plantations" editable="bottom">
+                                <field name="name" />
+                                <field name="village_id"  />
+                                <field name="frequency_id" />
+                                <field name="date" />
+                                <field name="area"/>
+                            </tree>
+                        </field>
+                    </page>
+                </notebook>
+
+
+            </field>
+        </record>
+
+        <record id="plantation_farmer_search_view" model="ir.ui.view">
+			<field name="name">Planteur</field>
+			<field name="model">res.partner</field>
+			<field name="arch" type="xml">
+				<search string="Search">
+					<field name="name"/>
+					<field name="code_farmer"/>
+                   <filter string="Particulier" name="filter_individual" domain="[('is_company', '=', False)]"/>
+                    <filter string="Société" name="filter_company" domain="[('is_company', '=', True)]"/>
+                    <group expand="1" string="Group By">
+                       <filter string="Société/Particulier" name="is_company" context="{'group_by': 'is_company'}"/>
+                    </group>
+				</search>
+			</field>
+		</record>
+
+        <record id="action_farmer_form" model="ir.actions.act_window">
+            <field name="name">Planteurs</field>
+            <field name="res_model">res.partner</field>
+            <field name="domain">[('farmer','=',True)]</field>
+            <field name="view_mode">tree,form</field>
+<!--            <field name="context">{'search_default_code_farmer': 1, 'search_default_code_farmer': 1, 'default_code_farmer': 1, 'search_default_code_farmer': 1}</field>-->
+
+            <field name="context">{'search_default_farmer': 1,'search_default_supplier_rank': 1,'default_farmer': 1}</field>
+           <field name="filter" eval="True"/>
+    <field name="help" type="html">
+        <p class="o_view_nocontent_smiling_face">
+            Créer un nouveau Planteur
+        </p>
+            </field>
+        </record>
+
+
+
+		<menuitem id="menu_action_farmer_form" name="Planteurs" parent="menu_farmer" action="action_farmer_form" sequence="1" />
+
+        <record id="plantation_group_view_tree" model="ir.ui.view">
+            <field name="name">plantation_group_view_tree</field>
+            <field name="model">group.group</field>
+            <field name="arch" type="xml">
+                <tree string="plantation_group_tree">
+                    <field name="name"/>
+                    <field name="line_farmer_ids"/>
+                </tree>
+            </field>
+        </record>
+        <record id="plantation_group_view_form" model="ir.ui.view">
+            <field name="name">plantation_group_view_form</field>
+            <field name="model">group.group</field>
+            <field name="arch" type="xml">
+                <form string="plantation_group_form">
+                    <sheet>
+                        <group>
+                            <field name="name"/>
+                        </group>
+                        <notebook>
+                            <page string="Planteurs">
+                                <field name="line_farmer_ids" widget="many2many" domain="[('farmer','=',True)]"/>
+                            </page>
+                            <page string="Prix planteurs">
+                                <field name="line_ids" readonly="1">
+                                    <tree>
+                                        <field name="date"/>
+                                        <field name="price"/>
+
+                                        <field name="price_driver"/>
+                                        <field name="prime"/>
+                                        <field name="prime1"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        <record id="plantation_group_action" model="ir.actions.act_window">
+            <field name="name">Groupe planteur</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">group.group</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+        <menuitem id="plantation_group_menu" parent="menu_farmer" action="plantation_group_action" sequence="5"/>
+	</data>
+</odoo>

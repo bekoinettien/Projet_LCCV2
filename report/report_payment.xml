@@ -1,0 +1,49 @@
+<odoo>
+    <report
+        string="Bulletin EXCEPTIONELLE"
+        id="action_report_validated_payment"
+        model="validated.payment"
+        report_type="qweb-pdf"
+        name="plantation.report_validated_payment"
+        file="plantation.report_validated_payment"
+        print_report_name="'Bulletin de paie - %s' % (object.farmer_id.name)"
+    />
+
+    <template id="report_paiement_bulletin">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <t t-foreach="docs" t-as="doc">
+                    <div class="page">
+                        <h2>Bulletin de Paiement - Prime Exceptionnelle</h2>
+                        <p>Référence : <t t-esc="doc.payment_id.name"/></p>
+                        <p>Groupe : <t t-esc="doc.payment_id.group_id.name"/></p>
+                        <p>Période : <t t-esc="doc.payment_id.date_from"/> AU <t t-esc="doc.payment_id.date_to"/></p>
+
+                        <!-- Informations du planteur sélectionné -->
+                        <table class="table table-condensed">
+                            <thead>
+                                <tr>
+                                    <th>Matricule Planteur</th>
+                                    <th>Planteur</th>
+                                    <th>Total Pesé</th>
+                                    <th>Prime Exceptionnelle</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><t t-esc="doc.code_farmer"/></td>
+                                    <td><t t-esc="doc.farmer_id.name"/></td>
+                                    <td><t t-esc="doc.total_weight"/></td>
+                                    <td><t t-esc="doc.amount"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Ajout d'une nouvelle page après chaque planteur -->
+
+                    <div style="page-break-after: always;"></div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

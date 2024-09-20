@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+	<data>
+
+	    <record model="ir.module.category" id="module_category_plantation">
+            <field name="name">Plantation</field>
+            <field name="sequence">19</field>
+        </record>
+
+
+		<record id="plantation_agent" model="res.groups">
+			<field name="name">Operateur de saisie</field>
+			<field name="category_id" ref="module_category_plantation"/>
+		</record>
+
+
+		<record id="plantation_payroll_manager" model="res.groups">
+			<field name="name">Responsable paie</field>
+			<field name="category_id" ref="module_category_plantation"/>
+			 <field name="implied_ids" eval="[(4, ref('plantation.plantation_agent'))]"/>
+		</record>
+
+		<record id="plantation_manager" model="res.groups">
+			<field name="name">Manager</field>
+			<field name="category_id" ref="module_category_plantation"/>
+			<field name="implied_ids" eval="[(4, ref('plantation.plantation_payroll_manager'))]"/>
+		</record>
+
+<!--	<record id="base.default_user" model="res.users">-->
+<!--        <field name="groups_id" eval="[(4,ref('plantation.plantation_manager'))]"/>-->
+<!--    </record>-->
+
+	</data>
+</odoo>
+
+
+<!--access_decrype_file,decrype_file,model_file_upload,plantation_manager,1,1,1,1-->
+<!--access_decrype_file_line,decrype_file,model_file_upload,plantation_manager,1,1,1,1-->
+<!--access_decrype_file,decrype_file,model_file_upload,plantation_manager,1,1,1,1-->

@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+   <report
+       string="Sythèse Achat"
+       id="action_report_planting"
+       model="report.planting"
+       report_type="qweb-pdf"
+       name="plantation.report_planting"
+       file="plantation.report_planting"
+       print_report_name="'Synthèse Achat - %s' % (object.date_start)"/>
+   <report
+       string="Etat de paie"
+       id="action_report_order"
+       model="report.planting"
+       report_type="qweb-pdf"
+       name="plantation.report_order"
+       file="plantation.report_order"
+       print_report_name="'Etat de paie - %s' % (object.date_start)"/>
+
+
+
+        <template id="report_planting">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t t-call="web.external_layout">
+                        <div class="page">
+                            <style>
+                               table,p{font-size:14px}
+                                table th, td{text-align:center }
+
+                            </style>
+
+                            <div class="row">
+                                <div class="text-center">
+                                    <h2 t-if="o.type=='simple'">SYNTHESE DES ACHATS <span t-if="o.type_id" style="color:#ce1131" t-field="o.type_id"/></h2>
+                                    <h2 t-if="o.type=='global'">SYNTHESE GENERALE DES ACHATS </h2>
+                                    <h2 t-if="o.type=='order'">ETAT DE PAIE  <span t-if="o.bank_id">PAR <span style="color:#ce1131" t-field="o.bank_id"/> </span></h2>
+
+                                    <p>Periode du <span t-field="o.date_start"/> au <span t-field="o.date_end"/> </p>
+                                </div>
+                            </div><br/><br/>
+
+
+                            <table class="table table-sm table-bordered table-condensed" t-if="o.type=='simple'">
+                                <thead>
+                                    <tr>
+                                        <th>Reference</th>
+                                        <th>Type Planteur</th>
+                                        <th>Matricule</th>
+                                        <th>Planteurs</th>
+                                        <th>Prix affecté</th>
+                                        <th>Quantité</th>
+                                        <th>Montant Apromac</th>
+                                        <th>Montant Net à payer</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="o.line_ids" t-as="line">
+                                        <td><span  t-field="line.ref"/></td>
+                                        <td><span  t-field="line.type_id"/></td>
+                                        <td><span  t-field="line.number"/></td>
+                                        <td><span  t-field="line.partner_id"/></td>
+                                        <td><span  t-field="line.price"/></td>
+                                        <td><span  t-field="line.qty"/></td>
+                                        <td><span  t-field="line.amount"/></td>
+                                        <td><span  t-field="line.amount_net"/></td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="5">Total</td>
+                                        <td><span t-field="o.total_qty"/></td>
+                                        <td><span t-field="o.total"/></td>
+                                        <td><span t-field="o.total_net"/></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+
+                            <table class="table table-sm table-bordered table-condensed" t-if="o.type=='global'">
+                                <thead>
+                                    <tr>
+                                        <th>Reference</th>
+                                        <th>Type Plantation</th>
+                                        <th>Prix Apromac</th>
+                                        <th>Poids</th>
+                                        <th>Recette brute </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="o.line_ids" t-as="line">
+                                        <td><span  t-field="line.ref"/></td>
+                                        <td><span  t-field="line.type_id"/></td>
+                                        <td><span  t-field="line.price"/></td>
+                                        <td><span  t-field="line.qty"/></td>
+                                        <td><span  t-field="line.amount"/></td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="3">Total</td>
+                                        <td><span t-field="o.total_qty"/></td>
+                                        <td><span t-field="o.total"/></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+
+                            <br/><br/>
+                           <div style="text-align:right">
+                               <p class="text-muted"> Abidjan le <span t-esc="time.strftime('%d/%m/%Y')" /> </p>
+                            </div>
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </template>
+
+    <template id="report_order">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t t-call="web.external_layout">
+                        <div class="page">
+                            <style>
+                               table,p{font-size:14px}
+                                table th, td{text-align:center }
+                            </style>
+
+                            <div class="row">
+                                <div class="text-center">
+                                    <h2 t-if="o.type=='simple'">SYNTHESE DES ACHATS <span t-if="o.type_id" style="color:#ce1131" t-field="o.type_id"/></h2>
+                                    <h2 t-if="o.type=='global'">SYNTHESE GENERALE DES ACHATS </h2>
+                                    <h2 t-if="o.type=='order'">ETAT DE PAIE  <span t-if="o.bank_id">PAR <span style="color:#ce1131" t-field="o.bank_id"/> </span></h2>
+
+                                    <p>Periode du <span t-field="o.date_start"/> au <span t-field="o.date_end"/> </p>
+                                </div>
+                            </div><br/><br/>
+
+                            <table class="table table-sm table-bordered table-condensed" t-if="o.type=='order'">
+                                <thead>
+                                    <tr>
+                                        <th>Matricule</th>
+                                        <th>Nom et Prenom</th>
+                                        <th>Banque</th>
+                                        <th>Numero de compte</th>
+                                        <th>Montant</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="o.line_order_ids" t-as="line">
+                                        <td><span  t-field="line.ref"/></td>
+                                        <td><span  t-field="line.partner_id"/></td>
+                                        <td><span  t-field="line.bank_id"/></td>
+                                        <td><span  t-field="line.num"/></td>
+                                        <td><span  t-field="line.amount"/></td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="4">Total</td>
+                                        <td><span t-field="o.total_net"/></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                            <br/><br/>
+                           <div style="text-align:right">
+                               <p class="text-muted"> Abidjan le <span t-esc="time.strftime('%d/%m/%Y')" /> </p>
+                            </div>
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </template>
+</odoo>

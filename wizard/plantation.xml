@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="planting_payslip_by_plantation" model="ir.ui.view">
+            <field name="name">planting.payslip.plantation.wz</field>
+            <field name="model">planting.payslip.plantation</field>
+            <field name="arch" type="xml">
+                <form string="Factures par plantations">
+                        <separator nolabel="1" string="Cet assistant permet de generer les bullettins de paie " />
+                        <field name="partner_ids" nolabel="1"/>
+                    <footer>
+                        <button icon="fa-check" string="Generer" name="compute_sheet" type="object" class="oe_highlight"  />
+                        <button string="Annuler" special="cancel"/>
+                    </footer>
+               </form>
+            </field>
+        </record>
+
+        <record id="action_planting_payslip_by_plantation" model="ir.actions.act_window">
+            <field name="name">Generer les bulletins</field>
+            <field name="res_model">planting.payslip.plantation</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="planting_payslip_by_plantation"/>
+            <field name="target">new</field>
+        </record>
+
+        <record id="planting_type_wz" model="ir.ui.view">
+            <field name="name">planting.wz.type.wizard</field>
+            <field name="model">planting.wz.type</field>
+            <field name="arch" type="xml">
+                <form string="Factures par plantations">
+                    <group>
+                        <group>
+                            <field name="date_start"/>
+                            <field name="type_id" invisible ="type != 'global'"/>
+                            <field name="bank_id" invisible ="type != 'order'"/>
+                        </group>
+                        <group>
+                            <field name="type" invisible="1"/>
+                            <field name="date_end"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <button string="Consulter" invisible = "type =='order'"  icon="fa-check-circle" name="action_print" type="object" class="oe_highlight"  />
+                        <button string="Consulter" invisible = "type !='order'" icon="fa-check" name="action_confirm" type="object" class="oe_highlight"  />
+                        <button string="Annuler" special="cancel"/>
+                    </footer>
+               </form>
+            </field>
+        </record>
+
+        <record id="planting_accounting_wz" model="ir.ui.view">
+            <field name="name">planting.wz.accounting.wizard</field>
+            <field name="model">planting.wz.type</field>
+            <field name="arch" type="xml">
+                <form string="Factures par plantations">
+                    <group>
+                        <group>
+                            <field name="date_start"/>
+                        </group>
+                        <group>
+                            <field name="date_end"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <button string="Exporter" icon="fa-check" name="action_print_accounting" type="object" class="oe_highlight"  />
+                        <button string="Annuler" special="cancel"/>
+
+                    </footer>
+               </form>
+            </field>
+        </record>
+
+        <record id="action_planting_type_wz" model="ir.actions.act_window">
+            <field name="name">Synthèse des Achats</field>
+            <field name="res_model">planting.wz.type</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="planting_type_wz"/>
+            <field name="target">new</field>
+        </record>
+
+        <record id="action_planting_global_type_wz" model="ir.actions.act_window">
+            <field name="name">Synthèse générale des Achats</field>
+            <field name="res_model">planting.wz.type</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="planting_type_wz"/>
+            <field name="context">{'default_type':'global'}</field>
+            <field name="target">new</field>
+        </record>
+
+        <record id="action_planting_order_wz" model="ir.actions.act_window">
+            <field name="name">Etat de paie</field>
+            <field name="res_model">planting.wz.type</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="planting_type_wz"/>
+            <field name="context">{'default_type':'order'}</field>
+            <field name="target">new</field>
+        </record>
+
+<!--         <record id="action_planting_Journal" model="ir.actions.act_window">-->
+<!--            <field name="name">Journal de control</field>-->
+<!--            <field name="res_model">planting.payslip.run</field>-->
+<!--           <field name="view_mode">tree,form</field>-->
+<!--        <field name="domain">[('state', '=', 'close')]</field>-->
+<!--        <field name="context">{}</field>-->
+<!--        </record>-->
+<!--        <record id="action_open_planting_account_move" model="ir.actions.act_window">-->
+<!--            <field name="name">Journal de Contrôle</field>-->
+<!--            <field name="res_model">planting.account.move</field>-->
+<!--            <field name="view_mode">tree,form</field>-->
+<!--            <field name="context">{}</field>-->
+<!--            &lt;!&ndash; Vous pouvez ajuster le domaine selon votre logique métier &ndash;&gt;-->
+
+
+<!--      </record>-->
+
+
+        <!-- This Menu Item must have a parent and an action -->
+        <menuitem id="menu_planting_order_wz" parent="menu_reports" action="action_planting_order_wz" sequence="1"/>
+        <menuitem id="menu_planting_type_wz" parent="menu_reports" action="action_planting_type_wz" sequence="2"/>
+<!--        <menuitem id="menu_planting_global_type_wz" parent="menu_reports" action="action_planting_global_type_wz" sequence="3"/>-->
+
+
+    </data>
+</odoo>

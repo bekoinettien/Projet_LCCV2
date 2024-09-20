@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+   <report
+            string="Ordre de Virement"
+            id="action_report_payment_order"
+            model="payment.order"
+            report_type="qweb-pdf"
+            name="plantation.report_payment"
+            file="plantation.report_payment"
+            print_report_name="'Virement - %s' % (object.date_from)"
+        />
+        <template id="report_payment">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t t-call="web.external_layout">
+                        <div class="page">
+                            <style>
+                               table,p{font-size:14px}
+                                table th, td{text-align:center }
+
+                            </style>
+
+                            <div class="row">
+                                <div class="text-center">
+                                    <h2>ETAT DE PAIE PAR VIREMENT N° <span style="color:#ce1131" t-field="o.name"/></h2>
+                                    <p>Periode du <span t-field="o.date_from"/> au <span t-field="o.date_to"/> </p>
+                                </div>
+                            </div><br/><br/>
+
+
+                            <table class="table table-sm table-bordered table-condensed">
+                                <thead>
+                                    <tr>
+                                        <th>Matricule</th>
+                                        <th>Nom et Prenom</th>
+                                        <th>Banque</th>
+                                        <th>Numero de compte</th>
+                                        <th>Montant</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="o.line_ids" t-as="line">
+                                        <td><span  t-field="line.ref"/></td>
+                                        <td><span  t-field="line.partner_id"/></td>
+                                        <td><span  t-field="line.bank_id"/></td>
+                                        <td><span  t-field="line.num"/></td>
+                                        <td><span  t-field="line.amount"/></td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="4">Total</td>
+                                        <td><span t-field="o.amount_total"/></td>
+                                    </tr>
+                                </tfoot>
+                            </table><br/><br/>
+                           <div style="text-align:right">
+                               <p class="text-muted"> Abidjan le <span t-esc="time.strftime('%d/%m/%Y')" /> </p>
+                            </div>
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </template>
+</odoo>

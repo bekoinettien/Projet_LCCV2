@@ -1,0 +1,39 @@
+<odoo>
+    <template id="report_lot_de_paie">
+        <t t-call="web.html_container">
+           <t t-call="web.external_layout">
+            <t t-foreach="docs" t-as="doc">
+                <div class="page">
+                    <h2>Bulletin de Paiement - Lot de paie</h2>
+                    <p>Référence : <t t-esc="doc.name"/></p>
+
+                    <p>Période : <t t-esc="doc.date_start"/>  AU  <t t-esc="doc.date_end"/></p>
+
+                    <table class="table table-condensed">
+                        <thead>
+                            <tr>
+                                <th>Reference</th>
+                                <th>Planteur</th>
+                                <th>Qte total</th>
+<!--                                <th>Prix</th>-->
+                                <th>Total Net</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="doc.slip_ids" t-as="line">
+                                <tr>
+                                    <td><t t-esc="line.number"/></td>
+                                    <td><t t-esc="line.partner_id.name"/></td>
+                                    <td><t t-esc="line.amount_pesee"/></td>
+<!--                                    <td><t t-esc="line.price"/></td>-->
+                                    <td><t t-esc="line.amount_net"/></td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </t>
+        </t>
+    </template>
+</odoo>

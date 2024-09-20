@@ -1,0 +1,25 @@
+<odoo>
+    <!-- Action du Rapport -->
+    <report
+        id="action_report_validated_payment_receipt"
+        string="Reçu de Paiement"
+        model="validated.payment"
+        report_type="qweb-pdf"
+        name="plantation.report_validated_payment_receipt"
+        file="plantation.report_validated_payment_receipt"
+    />
+
+    <!-- Template QWeb -->
+    <template id="report_validated_payment_receipt">
+        <t t-call="web.external_layout">
+            <div class="page">
+                <h2>Reçu de Paiement pour Planteur</h2>
+                <p><strong>Nom du Planteur :</strong> <span t-field="doc.farmer_id.name"/></p>
+                <p><strong>Référence du Paiement :</strong> <span t-field="doc.payment_id.name"/></p>
+                <p><strong>Poids Total :</strong> <span t-field="doc.total_weight"/> kg</p>
+                <p><strong>Prix :</strong> <span t-field="doc.price"/> XOF</p>
+                <p><strong>Montant Total :</strong> <span t-field="doc.amount"/> XOF</p>
+            </div>
+        </t>
+    </template>
+</odoo>

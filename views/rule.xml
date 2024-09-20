@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Salary Rules -->
+
+        <record id="planting_salary_rule_list" model="ir.ui.view">
+            <field name="name">planting.salary.rule.list</field>
+            <field name="model">planting.salary.rule</field>
+            <field name="arch" type="xml">
+                <tree string="Salary Rules">
+                    <field name="name"/>
+                    <field name="code"/>
+                    <field name="category_id"/>
+                    <field name="sequence" invisible="1"/>
+                    <field name="farmer" invisible="1"/>
+
+<!--                    <field name="driver" invisible="1"/>-->
+                </tree>
+            </field>
+        </record>
+
+        <record id="planting_salary_rule_form" model="ir.ui.view">
+            <field name="name">planting.salary.rule.form</field>
+            <field name="model">planting.salary.rule</field>
+            <field name="arch" type="xml">
+                <form string="Salary Rules">
+                    <sheet>
+                        <label for="name" class="oe_edit_only"/>
+                        <h1><field name="name"/></h1>
+                        <label for="category_id" class="oe_edit_only"/>
+                        <h2><field name="category_id"/></h2>
+                        <group>
+                            <group>
+                                <field name="code"/>
+                                <field name="sequence" />
+                                <field name="active"/>
+                            </group>
+                           <group>
+                               <field name="appears_on_payslip"/>
+                                <field name="company_id" widget="Selection" groups="base.group_multi_company"/>
+                                <field name="farmer" invisible="1"/>
+<!--                                <field name="driver" invisible="1"/>-->
+                           </group>
+                        </group>
+                        <notebook colspan="6">
+                            <page string="General">
+                                <group col="4">
+                                    <separator colspan="4" string="Conditions"/>
+                                    <field name="condition_select"/><newline/>
+                                    <field name="condition_python" invisible="condition_select != 'python'" modifiers="{'required': [('condition_select', '=', 'python')]}" colspan="4"/>
+                                    <field name="condition_range" invisible="condition_select != 'range'" modifiers="{'required': [('condition_select', '=', 'range')]}"/>
+                                    <field name="condition_range_min" invisible="condition_select != 'range'" modifiers="{'required': [('condition_select', '=', 'range')]}" colspan="2"/>
+                                    <field name="condition_range_max" invisible="condition_select != 'range'" modifiers="{'required': [('condition_select', '=', 'range')]}" colspan="2"/>
+                                    <separator string="Computation" colspan="4"/>
+                                    <field name="amount_select" /><newline/>
+                                            <field name="amount_percentage_base" invisible="amount_select != 'percentage'" modifiers="{'required': [('amount_select', '=', 'percentage')]}"/> <newline/>
+                                            <field name="quantity" invisible="amount_select != 'fix'" modifiers="{'required': [('amount_select', '=', 'fix')]}" /> <newline/>
+                                            <field name="amount_fix" invisible="amount_select != 'fix'" modifiers="{'required': [('amount_select', '=', 'fix')]}" /> <newline/>
+                                            <field name="amount_python_compute" invisible="amount_select != 'code'" modifiers="{'required': [('amount_select', '=', 'code')]}" colspan="4" />
+                                            <field name="amount_percentage" invisible="amount_select != 'percentage'"  modifiers="{'required': [('amount_select', '=', 'percentage')]}"/>
+                                </group>
+                            </page>
+                            <page string="Entrées">
+                                <field name="input_ids">
+                                    <tree string="Input Data" editable="bottom">
+                                        <field name="name"/>
+                                        <field name="code"/>
+                                    </tree>
+                                </field>
+                            </page>
+                            <page string="Description">
+                                <field name="note"/>
+                            </page>
+                            <page string="Comptabilité">
+                                <group>
+                                     <field name="debit_account_id"/>
+<!--                                     <field name="credit_account_id"/>-->
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <!-- Chatter -->
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers" groups="base.group_user"/>
+                        <field name="activity_ids" widget="mail_activity"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_hr_rule_filter" model="ir.ui.view">
+            <field name="name">planting.salary.rule.select</field>
+            <field name="model">planting.salary.rule</field>
+            <field name="arch" type="xml">
+                <search string="Search Salary Rule">
+                    <field name="name" string="Salary Rules" filter_domain="['|',('name','ilike',self),('code','ilike',self)]"/>
+                    <field name="category_id"/>
+                    <field name="condition_range_min"/>
+                    <group col="8" colspan="4" expand="0" string="Group By">
+                        <filter string="Category" name="head" context="{'group_by':'category_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_farmer_salary_rule" model="ir.actions.act_window">
+            <field name="name">Règles salariales</field>
+            <field name="res_model">planting.salary.rule</field>
+            <field name="domain">[('farmer','=',True)]</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_hr_rule_filter"/>
+            <field name="context">{'default_farmer': 1}</field>
+        </record>
+
+        <menuitem id="menu_farmer_planting_salary_rule_" action="action_farmer_salary_rule" parent="menu_rule_plating_categ" sequence="12"/>
+
+<!--        <record id="action_planting_salary_rule_form_driver" model="ir.actions.act_window">-->
+<!--            <field name="name">Rubriques</field>-->
+<!--            <field name="res_model">planting.salary.rule</field>-->
+<!--            <field name="view_mode">tree,form</field>-->
+<!--            <field name="domain">[('driver','=',True)]</field>-->
+<!--            <field name="search_view_id" ref="view_hr_rule_filter"/>-->
+<!--            <field name="context">{'default_driver': 1}</field>-->
+<!--        </record>-->
+
+<!--        <menuitem id="menu_action_planting_salary_rule_driver" action="action_planting_salary_rule_form_driver" parent="menu_driver_categ" sequence="12"/>-->
+
+
+    </data>
+</odoo>

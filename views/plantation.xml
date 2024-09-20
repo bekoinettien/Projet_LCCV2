@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+	<data>
+
+		<record id="plantation_plantation_tree_view" model="ir.ui.view">
+			<field name="name">plantation.plantation.tree</field>
+			<field name="model">plantation.plantation</field>
+			<field name="type">tree</field>
+			<field name="arch" type="xml">
+				<tree string="Plantations">
+					<field name="name" />
+
+					<field name="partner_id"/>
+
+<!--					<field name="locality_id" />-->
+<!--					<field name="sector_id" optional="hide" />-->
+					<field name="village_id"  />
+					<field name="frequency_id" />
+					<field name="date" />
+					<field name="area" optional="hide"/>
+				</tree>
+			</field>
+		</record>
+
+		<record id="plantation_plantation_form_view" model="ir.ui.view">
+			<field name="name">plantation.plantation.form</field>
+			<field name="model">plantation.plantation</field>
+			<field name="priority" eval="8" />
+			<field name="arch" type="xml">
+				<form string="Version" >
+					<sheet>
+						<div class="oe_title">
+                            <label for="name"/>
+                            <h1>
+                                <field name="name" placeholder="PV00001"/>
+                            </h1>
+                        </div>
+						<group>
+							<group string="Informations generales">
+<!--								<field name="locality_id"  required="1" options="{'no_create': True}"/>-->
+								<field name="partner_id" domain="[('farmer','=',True)]" options="{'no_create': True}" />
+
+<!--								<field name="sector_id" domain="[('locality_id','=',locality_id)]" options="{'no_create': True}"/>-->
+								<field name="village_id"   options="{'no_create': True}"/>
+								<field name="number_geo"/>
+
+
+							</group>
+							<group string="Autres Informations">
+								<field name="number_geo"/>
+								<field name="frequency_id" required="1" />
+								<field name="area" />
+								<field name="date"/>
+							</group>
+						</group>
+
+					</sheet>
+					<!-- Chatter -->
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers" groups="base.group_user"/>
+                        <field name="activity_ids" widget="mail_activity"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+				</form>
+			</field>
+		</record>
+
+		<record id="plantation_plantation_search_view" model="ir.ui.view">
+			<field name="name">Plantations</field>
+			<field name="model">plantation.plantation</field>
+			<field name="arch" type="xml">
+				<search string="Search">
+					<field name="name"/>
+					<field name="partner_id"/>
+<!--					<field name="locality_id"/>-->
+<!--					<field name="sector_id"/>-->
+					<field name="village_id" />
+					<group expand="0" string="Grouper par">
+                        <filter string="Planteur"  name="partner_id" context="{'group_by':'partner_id'}"/>
+                        <filter string="Frequence de paie" name="regime" context="{'group_by':'frequency_id'}"/>
+<!--                        <filter string="Région" name="locality" context="{'group_by':'locality_id'}"/>-->
+                        <filter string="Village" name="village" context="{'group_by':'village_id'}"/>
+                    </group><!--                        <filter string="Département" name="sector" context="{'group_by':'sector_id'}"/>-->
+
+				</search>
+			</field>
+		</record>
+
+
+		<record model="ir.actions.act_window" id="action_plantation_planting">
+			<field name="name">Plantation</field>
+			<field name="res_model">plantation.plantation</field>
+			<field name="view_mode">tree,form</field>
+			<field name="help" type="html">
+		      <p class="o_view_nocontent_smiling_face">
+		        Creer un nouvelle plantation
+		      </p>
+		    </field>
+		</record>
+
+			<menuitem id="menu_action_plantation_plantation" name="Plantation"
+			parent="menu_planting" action="action_plantation_planting" sequence="1" />
+
+
+		<!--##########################
+		 +++++++	FARMER PAY +++++++
+		##############################-->
+
+        <record id="farmer_day_form" model="ir.ui.view">
+            <field name="name">farmer.day.form</field>
+            <field name="model">farmer.pay</field>
+            <field name="arch" type="xml">
+                <form string="List of Weight">
+                    <header>
+                        <field name="state" widget="statusbar" statusbar_visible="unpaid,paid"/>
+                    </header>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field name="date"/>
+                                <field name="farmer_id"/>
+                            </group>
+                            <group>
+                                <field name="product_id"/>
+                                <field name="origine"/>
+                                <field name="aire"/>
+                                <field name="qty"/>
+<!--                                <field name="qty1"/>-->
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="farmer_day_search_view" model="ir.ui.view">
+            <field name="name">farmer.pay.search</field>
+            <field name="model">farmer.pay</field>
+            <field name="arch" type="xml">
+                <search string="ModelTitle">
+                    <field name="name"/>
+                    <field name="farmer_id"/>
+                    <field name="product_id"/>
+                    <field name="state"/>
+                    <filter string="Non Payé" name="un_paid_farmer" domain="[('state','=','un_paid')]"/>
+                    <filter string="Payé" name="paid_farmer" domain="[('state','=','paid')]"/>
+                    <group expand="1" string="Group By">
+                        <filter string="Statut" name="states" context="{'group_by':'state'}"/>
+                        <filter string="Planteurs" name="states" context="{'group_by':'farmer_id'}"/>
+                        <filter string="Produits" name="location_des" context="{'group_by':'product_id'}"/>
+                         <filter string="Date" name="dates" context="{'group_by':'date'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="farmer_day_tree_view" model="ir.ui.view">
+            <field name="name">farmer.day.tree</field>
+            <field name="model">farmer.pay</field>
+            <field name="arch" type="xml">
+                <tree string="List of Weight" limit="200" decoration-primary="state == 'un_paid'" decoration-success="state == 'paid'">
+                    <field name="name"/>
+                    <field name="date"/>
+                    <field name="farmer_id"/>
+                    <field name="product_id"/>
+                    <field name="origine"/>
+                    <field name="aire"/>
+                    <field name="qty" sum="Total"/>
+<!--                    <field name="qty1" sum="Total"/>-->
+                    <field name="state" widget="badge" decoration-success="state == 'paid'" decoration-danger="state == 'un_paid'"/>
+                </tree>
+            </field>
+        </record>
+
+         <record id="farmer_pay_action" model="ir.actions.act_window">
+            <field name="name">Planteur à payer</field>
+            <field name="res_model">farmer.pay</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('state','=','un_paid')]</field>
+        </record>
+
+        <!-- This Menu Item Must have a parent -->
+        <menuitem id="menu_categ_paid_farmer" name="Planteur à payer" parent="menu_planting" sequence="3"/>
+            <menuitem id="menu_farmer_pay" parent="menu_categ_paid_farmer" action="farmer_pay_action" sequence="1"/>
+
+        <record id="farmer_pay_all_action" model="ir.actions.act_window">
+            <field name="name">Toutes les Fiches </field>
+            <field name="res_model">farmer.pay</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- This Menu Item must have a parent and an action -->
+        <menuitem id="menu_farmer_pay_all" parent="menu_planting" action="farmer_pay_all_action" sequence="20"/>
+
+
+
+	</data>
+</odoo>

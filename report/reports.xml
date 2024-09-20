@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="planting_report_tree" model="ir.ui.view">
+            <field name="name">plating.report.tree</field>
+            <field name="model">report.planting</field>
+            <field name="arch" type="xml">
+                <tree  string="Synthese" create="0" duplicate="0" delete="0">
+                    <field name="type" invisible="1"/>
+                    <field name="date_start"/>
+                    <field name="date_end"/>
+                    <field name="type_id" invisible = " type == 'global'"/>
+                    <field name="total_qty"/>
+                    <field name="total"/>
+                    <field name="total_net" invisible = "type == 'global'"/>
+                </tree>
+            </field>
+        </record>
+
+	    <record id="planting_report_form" model="ir.ui.view">
+            <field name="name">plating.report.form</field>
+            <field name="model">report.planting</field>
+            <field name="arch" type="xml">
+                <form string="Virements">
+                    <sheet>
+                        <group>
+                            <group string="Periode">
+                                <field name="type" invisible="1"/>
+                                <field name="name" invisible="1"/>
+                                <field name="date_start"/>
+                                <field name="date_end"/>
+                                <field name="type_id" invisible = " type != 'simple' "/>
+                            </group>
+                            <group string="Montant Cumulé">
+                                <field name="total_qty" invisible = " type == 'order' "/>
+                                <field name="total" invisible = " type == 'order' "/>
+                                <field name="total_net" invisible = "type == 'global' "/>
+                                <field name="bank_id" invisible = " type != 'order' "/>
+                            </group>
+                        </group>
+                        <notebook>
+                                <page string="Ligne synthèses" invisible = " type != 'simple' ">                                <field name="line_ids" readonly="1">
+                                    <tree>
+                                        <field name="type" invisible="1"/>
+                                        <field name="ref"/>
+                                        <field name="type_id"/>
+                                        <field name="number" />
+                                        <field name="partner_id" />
+                                        <field name="price"/>
+                                         <field name="qty" sum="Total"/>
+                                        <field name="amount" sum="Total"/>
+                                        <field name="amount_net" sum="Total NET"/>
+                                    </tree>
+                                </field>
+                            </page>
+                            <page string="Ligne sythèses" invisible = " type != 'global' ">
+                                <field name="line_ids" readonly="1">
+                                    <tree>
+                                        <field name="type" invisible="1"/>
+                                        <field name="ref"/>
+                                        <field name="type_id"/>
+                                        <field name="price"/>
+                                         <field name="qty" sum="Total"/>
+                                        <field name="amount" string="Recette brute" sum="Total"/>
+                                    </tree>
+                                </field>
+                            </page>
+                             <page string="Ligne de virement" invisible = "type != 'order' ">
+                                <field name="line_order_ids" nolabel="1" readonly="1">
+                                    <tree  string="Lignes de virement" create="0">
+                                        <field name="ref"/>
+                                        <field name="partner_id"/>
+                                        <field name="bank_id"/>
+                                        <field name="num"/>
+                                        <field name="amount" sum="Total NET"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+    </data>
+</odoo>
