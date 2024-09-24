@@ -1,10 +1,3 @@
-    # -*- coding: utf-8 -*-
-##############################################################################
-#
-#    OpenERP, Open Source Business Applications
-#    Copyright (C) 2004-2012 OpenERP S.A. (<http://openerp.com>).
-##############################################################################
-
 from odoo import fields, models,api,exceptions
 import base64
 import os
@@ -191,19 +184,95 @@ class Selection(models.Model):
 
 class Paiement(models.Model):
     _name = 'paiement.paiement'
-    _description = 'Paiement des Planteurs'
+    _description = 'Paiement des primes'
 
-    # name = fields.Char(string="Référence", required=True)
-    name = fields.Char(string="Référence", required=False, default=lambda self: self.env['ir.sequence'].next_by_code('paiement.reference'))
-    group_id = fields.Many2one('prime.prime', string="Groupe", required=True)
-    date_from = fields.Date(string="Date Début", required=True)
-    date_to = fields.Date(string="Date Fin", required=True)
-    payment_line_ids = fields.One2many('payment.line', 'payment_id', string="Lignes de Paiement")
+    group_id = fields.Many2one('prime.prime', string="Groupe")
+    selection_id = fields.Many2one('selection.selection', string="Sélection")
+    date_from = fields.Date(string="Date de début")
+    date_to = fields.Date(string="Date de fin")
+    payment_line_ids = fields.One2many(comodel_name='payment.line', inverse_name='payment_id', string="Lignes de Paiement")
     state = fields.Selection([
         ('draft', 'Brouillon'),
         ('paid', 'Payé'),
-        ('cancelled', 'Annulé')
+        ('cancelled', 'Fermer')
     ], string='État', default='draft')
+
+    @api.model
+    def create(self, vals):
+        # Récupérer les dates de la sélection
+        selection = self.env['selection.selection'].browse(vals.get('selection_id'))
+        if not selection:
+            raise exceptions.ValidationError("Sélection invalide.")
+
+        # Vérifier l'existence d'un paiement pour le même groupe et la même période
+        existing_payment = self.env['paiement.paiement'].search([
+            ('group_id', '=', selection.prime_id.id),
+            ('date_from', '<=', selection.datefin),
+            ('date_to', '>=', selection.datedebut)
+        ], limit=1)
+
+        if existing_payment:
+            raise exceptions.UserError("Le groupe a déjà été payé pour cette période.")
+
+        # Création du paiement
+        return super(Paiement, self).create(vals)
+
+    @api.onchange('selection_id')
+    def _onchange_selection_id(self):
+        """Synchronise les informations de la sélection choisie."""
+        if self.selection_id:
+            self.group_id = self.selection_id.prime_id
+            self.date_from = self.selection_id.datedebut
+            self.date_to = self.selection_id.datefin
+
+            # Vider les lignes de paiement
+            self.payment_line_ids = [(5, 0, 0)]  # 5 = 'unlink', vide les lignes existantes
+
+            # Calculer les lignes de paiement après mise à jour
+            self._compute_payment_lines()
+
+    @api.onchange('group_id', 'date_from', 'date_to')
+    def _compute_payment_lines(self):
+        """Calcul des lignes de paiement basé sur le groupe et la période."""
+        if self.group_id and self.date_from and self.date_to:
+            selections = self.env['selection.selection'].search([
+                ('prime_id', '=', self.group_id.id),
+                ('datedebut', '<=', self.date_to),
+                ('datefin', '>=', self.date_from),
+                ('active', '=', True)
+            ])
+
+            if not selections:
+                raise exceptions.UserError("Aucune prime active trouvée pour le groupe à cette période.")
+
+            payment_lines = []
+            for farmer in self.group_id.farmer_ids:
+                total_weight = sum(self.env['weight.weight'].search([
+                    ('supplier_id', '=', farmer.id),
+                    ('date', '>=', self.date_from),
+                    ('date', '<=', self.date_to)
+                ]).mapped('qty'))
+
+                prime = 0
+                if total_weight == self.group_id.seuil:
+                    prime = total_weight * self.group_id.price1
+                elif total_weight > self.group_id.seuil:
+                    prime = (self.group_id.seuil * self.group_id.price1) + \
+                            ((total_weight - self.group_id.seuil) * self.group_id.price2)
+
+                if prime > 0:
+                    bank_account = self.env['res.partner.bank'].search([('partner_id', '=', farmer.id)], limit=1)
+
+                    payment_lines.append((0, 0, {
+                        'farmer_id': farmer.id,
+                        'total_weight': total_weight,
+                        'price': prime,
+                        'amount': prime,
+                        'bank_id': bank_account.bank_id.id if bank_account else False,
+                        'acc_number': bank_account.acc_number if bank_account else False,
+                    }))
+            self.payment_line_ids = payment_lines
+
 
 
     def action_pay(self):
@@ -230,56 +299,6 @@ class Paiement(models.Model):
         self.write({'state': 'draft'})
 
 
-    @api.model
-    def create(self, vals):
-        existing_payment = self.env['paiement.paiement'].search([
-            ('group_id', '=', vals.get('group_id')),
-            ('date_from', '<=', vals.get('date_to')),
-            ('date_to', '>=', vals.get('date_from'))
-        ], limit=1)
-
-        if existing_payment:
-            raise UserError("Le groupe a déjà été payé pour cette période.")
-
-
-        return super(Paiement, self).create(vals)
-
-    @api.onchange('group_id', 'date_from', 'date_to')
-    def _compute_payment_lines(self):
-        if self.group_id and self.date_from and self.date_to:
-            selections = self.env['selection.selection'].search([
-                ('prime_id', '=', self.group_id.id),
-                ('datedebut', '<=', self.date_to),
-                ('datefin', '>=', self.date_from),
-                ('active', '=', True)
-            ])
-
-            if not selections:
-                raise UserError("Aucune prime active trouvée pour le groupe à cette période.")
-
-            payment_lines = []
-            for farmer in self.group_id.farmer_ids:
-                total_weight = sum(self.env['weight.weight'].search([
-                    ('supplier_id', '=', farmer.id),
-                    ('date', '>=', self.date_from),
-                    ('date', '<=', self.date_to)
-                ]).mapped('qty'))
-
-                prime = 0
-                if total_weight == self.group_id.seuil:
-                    prime = total_weight * self.group_id.price1
-                elif total_weight > self.group_id.seuil:
-                    prime = (self.group_id.seuil * self.group_id.price1) + \
-                            ((total_weight - self.group_id.seuil) * self.group_id.price2)
-
-                if prime > 0:
-                    payment_lines.append((0, 0, {
-                        'farmer_id': farmer.id,
-                        'total_weight': total_weight,
-                        'price': prime,
-                        'amount': prime  # La prime calculée
-                    }))
-            self.payment_line_ids = payment_lines
 
 
 class PaymentLine(models.Model):

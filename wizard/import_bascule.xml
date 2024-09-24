@@ -321,7 +321,7 @@
         <form string="Payment">
             <header>
                 <button name="action_pay" type="object" string="Marquer comme Payé" invisible= 'state != "draft"' class="btn-primary"/>
-                <button name="action_cancel" type="object" string="Annuler" invisible= 'state != "draft"' class="btn-danger"/>
+                <button name="action_cancel" type="object" string="Fermer" invisible= 'state != "draft"' class="btn-success"/>
                 <button name="action_draft" type="object" string="Revenir au Brouillon" invisible="state not in('paid','cancelled')"  class="btn-secondary"/>
                 <field name="state" widget='statusbar' statusbar_visible='draft,paid,cancelled'/>
                 <widget name="web_ribbon" title="Payé"  bg_color="bg-success"
@@ -329,7 +329,7 @@
             </header>
             <sheet>
                 <group>
-                    <field name="name"/>
+                    <field name="selection_id" options="{'no_create': True}"/>
                     <field name="group_id"/>
 
                     <field name="date_from"/>
@@ -356,6 +356,22 @@
         </form>
     </field>
 </record>
+
+         <record id="view_paiement_tree" model="ir.ui.view">
+            <field name="name">paiement.paiement.tree</field>
+            <field name="model">paiement.paiement</field>
+            <field name="arch" type="xml">
+                <tree string="Paiements des Primes">
+                    <field name="group_id"/>
+                    <field name="selection_id"/>
+                    <field name="date_from"/>
+                    <field name="date_to"/>
+                    <field name="state"/>
+                </tree>
+            </field>
+        </record>
+
+
         <record id="view_validated_payment_tree" model="ir.ui.view">
             <field name="name">validated.payment.tree</field>
             <field name="model">validated.payment</field>
