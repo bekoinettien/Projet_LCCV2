@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <report
+            string="Bulletin Planteur"
+            id="action_report_payslip_farmer"
+            model="planting.payslip"
+            report_type="qweb-pdf"
+            name="plantation.report_payslip_farmer"
+            file="plantation.report_payslip_farmer"
+            print_report_name="'Bulletin de paie - %s' % (object.partner_id.name)"
+            multi="True"
+        />
+      <template id="report_payslip_farmer">
+
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+
+<!--               <div class="header">-->
+<!--            <t t-call="web.external_layout">-->
+                    <div class="page">
+
+                    <div class="header">
+                                <div class="row" style="border: 1px solid #000; padding: 10px; border-radius: 15px;">
+                                         <div class="col-6">
+                                             <div class="row">
+                                                 <div class="col-6">
+                                                    <img src="/plantation/static/src/img/lcc.jpeg" alt="Logo" height="160px"/>
+                                                 </div>
+                                                 <div class="col-6">
+                                                    <h1 style="font-size: 20px; margin-bottom: 0;">LCC</h1>
+                                                        <p style="margin: 0;">N°CC: 1832658 G</p>
+                                                        <p style="margin: 0;">18 BP 2897 ABIDJAN 18</p>
+                                                        <p style="margin: 0;">Téléphone : 0022523536545</p>
+                                                        <p style="margin: 0;">Email : contact@lcc-ci.com</p>
+                                                        <hr style="margin-top: 15px;"/>
+                                                 </div>
+                                             </div>
+                                         </div>
+                                        <div class="col-6" >
+                                                <div class="row" style="background-color: #DAD8E2; border-radius:15px ">
+                                                    <h3 class="text-center" style="border: 1px solid #000;border-radius:15px; padding-top: 20px;padding-bottom: 20px; padding-left: 20px; "> REVENU DU PLANTEUR</h3>
+
+                                                </div>
+                                                <div class="row" style="background-color: #DAD8E2; border-radius:15px" >
+                                                    <h4 class="text-center"  style="border: 1px solid #000;border-radius:15px ; padding-top: 20px;padding-bottom: 20px; padding-left: 20px;" ><strong>Periode : <span t-field="o.date_from"/></strong> AU <strong> <span t-field="o.date_to"/></strong></h4>
+
+                                                </div>
+
+                                        </div>
+
+                                </div>
+
+
+
+
+
+    <!--                    MISE A JOUR BEKOIN 06/9/24-->
+                                <div class="row">
+                                    <div class="col-6" style="border: 1px solid #000; padding: 10px; border-radius: 15px;">
+                                                <h4>
+                                               <t> IDENTIFICATION PLANTATION</t>
+                                            </h4>
+                                            <p><strong>PLANTATION: <span style="color : #DD0021" t-field="o.partner_id.plantation_ids.name"/></strong>... <strong>TYPE: <span t-field="o.partner_id.type_id.name"/></strong></p>
+                                            <p><strong>Sous.R.Achat : DAOUKRO</strong>... <strong>R.Achat : DAOUKRO</strong></p>
+                                            <p><strong>Village : <span t-field="o.partner_id.plantation_ids.village_id.name"/></strong></p>
+            <!--                                <p><strong>R.Achat : DAOUKRO</strong></p>-->
+            <!--                                <p><strong>Banque : <span t-field="o.bank_id"/></strong></p>-->
+            <!--                                <p><strong>TYPE: <span t-field="o.partner_id.type_id.name"/></strong></p>-->
+                                            <p><strong>Prix Apromac : <span t-field="o.prix_apromac"/></strong></p>
+                                            <p><strong>Total Livré : <span t-field="o.Total_poids"/></strong></p>
+
+                                    </div>
+
+
+                                   <div class="col-6" style="border: 1px solid #000; padding: 10px; border-radius: 15px;">
+                                             <h4>
+                                               <t> IDENTIFICATION PLANTEUR</t>
+                                            </h4>
+                                             <p><strong>Code Planteur: <span style="color : #910015" t-field="o.partner_id.code_farmer"/></strong></p>
+                                             <p><strong>Nom : <span  style="color : #910015" t-field="o.partner_id"/></strong></p>
+                                             <p><strong>N° CC : <span t-field="o.partner_id.vat"/></strong></p>
+                                             <p><strong>Téléphone : <span t-field="o.partner_id.phone"/></strong></p>
+                                             <p><strong>Adresse : <span t-field="o.partner_id.email"/></strong></p>
+
+                                   </div>
+                                </div>
+
+
+                                <table class="table table-sm table-bordered table-striped" style="text-align:center; ">
+                                                  <thead>
+                                                        <tr>
+                                                            <th style="background-color: #B1BEFC">Code</th>
+                                                            <th style="background-color: #B1BEFC">Rubriques</th>
+                                                            <th style="background-color: #B1BEFC">Base(Kg/F) </th>
+                <!--                                            <th>Quantité NON EUDR</th>-->
+                                                            <th style="background-color: #B1BEFC">Prix/Taux</th>
+                                                            <th style="background-color: #B1BEFC">Gains</th>
+                                                            <th style="background-color: #B1BEFC">Retenues</th>
+                                                        </tr>
+                                                 </thead>
+                                                <tbody>
+                                                        <tr t-foreach="o.line_ids.filtered(lambda line: line.appears_on_payslip)" t-as="line">
+                                                            <td><span t-field="line.salary_rule_id.sequence"/></td>
+                                                            <td style="width:200px;text-align:left">
+                                                                <span t-field="line.salary_rule_id.name"/>
+                                                            </td>
+                                                            <!-- Quantité EUDR -->
+                                                            <td>
+                                                                <span t-if="line.salary_rule_id.name == 'Montant fonds de tasse EUDR' " t-esc="line.slip_id.total_qty_eudr" t-options='{"widget": "float", "precision": 0}'/>
+                <!--                                                <span t-if="line.salary_rule_id.name == 'Prime EUDR' " t-esc="line.slip_id.total_qty_eudr" t-options='{"widget": "float", "precision": 0}'/>-->
+                <!--                                                <span t-if="line.salary_rule_id.name == 'Transport' " t-esc="line.slip_id.total_qty_eudr" t-options='{"widget": "float", "precision": 0}'/>-->
+                <!--                                                <span t-if="line.salary_rule_id.name == 'Montant Fonds de tasse NON EUDR' or line.salary_rule_id.name == 'Prime NON EUDR'" t-esc="0"/>-->
+                                                                <span t-if="line.salary_rule_id.name == 'Montant fonds de tasse NON EUDR'" t-esc="line.slip_id.total_qty_non_eudr" t-options='{"widget": "float", "precision": 0}'/>
+                                                                <span t-if="line.salary_rule_id.name == 'Montant Fond de tasse Apromac'" t-esc="line.slip_id.Total_poids" t-options='{"widget": "float", "precision": 0}'/>
+
+                                                            </td>
+
+                                                            <!-- Prix EUDR -->
+                                                            <td>
+                                                                  <span t-if="line.salary_rule_id.name == 'Montant fonds de tasse EUDR'" t-esc="line.slip_id.prime" t-options='{"widget": "float", "precision": 0}'/>
+                <!--                                                <span t-if="line.salary_rule_id.name == 'Prime EUDR'" t-esc="line.slip_id.prime" t-options='{"widget": "float", "precision": 0}'/>-->
+                <!--                                                  <span t-if="line.salary_rule_id.name == 'Transport'" t-esc="line.slip_id.price_driver" t-options='{"widget": "float", "precision": 0}'/>-->
+                                                                  <span t-if="line.salary_rule_id.name == 'Montant fonds de tasse NON EUDR'" t-esc="line.slip_id.prime1" t-options='{"widget": "float", "precision": 0}'/>
+                                                                  <span t-if="line.salary_rule_id.name == 'Montant Fond de tasse Apromac'" t-esc="line.slip_id.prix_apromac" t-options='{"widget": "float", "precision": 0}'/>
+                <!--                                                <span t-if="line.salary_rule_id.name == 'Prime NON EUDR'" t-esc="line.slip_id.prime1" t-options='{"widget": "float", "precision": 0}'/>-->
+                                                <!--                <span t-if="line.salary_rule_id.name == 'Fond Non EUDR' or line.salary_rule_id.name == 'Prime NON EUDR'" t-esc="0"/>-->
+                                                            </td>
+
+
+                                                            <!-- Gains -->
+                                                            <td>
+                                                                <span t-if="line.category_id.code=='BASE'" t-esc="line.amount" t-options='{"widget": "float", "precision": 0}'/>
+                                                                <span t-if="line.category_id.code=='PRIME'" t-esc="line.total" t-options='{"widget": "float", "precision": 0}'/>
+                                                                <span t-if="line.category_id.code=='QT'" t-esc="line.total" t-options='{"widget": "float", "precision": 0}'/>
+                                                            </td>
+                                                            <!-- Retenues -->
+                                                            <td>
+                                                                <span t-if="line.category_id.code=='RETENUE'" t-esc="line.total" t-options='{"widget": "float", "precision": 0}'/>
+                                                            </td>
+                                                        </tr>
+                                                 </tbody>
+
+                                </table>
+
+
+                                <div class="row">
+                                        <div class="col-4" >
+
+                                        </div>
+                                        <div class="col-2" >
+
+                                        </div>
+                                    <div class="col-6" style="text-align:center; border: 1px solid #000; ">
+                                        <table class="table table-sm table-bordered table-striped" >
+
+                                                <tbody>
+
+                                                </tbody>
+                                                 <tfoot><br/>
+
+                                                            <tr>
+                                                                <td colspan="6"><span>TOTAL GAINS </span></td>
+
+                                                                <td><span t-esc="o.gains" t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}' /></td>
+                                                                </tr>
+                                                            <tr>
+                                                                <td colspan="6"><span>RETENUE </span></td>
+                                                                <td><span t-esc="o.returned" t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td colspan="6"><h5>NET A PAYER</h5></td>
+                                                                <td>
+                                                                    <h5>
+                                                                        <span t-esc="o.amount_net" t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+                                                                    </h5>
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td colspan="6"><span>Banque </span></td>
+                                                                <td> <span t-field="o.bank_id"/>
+                                                                </td>
+
+                                                            </tr>
+                                                            <tr>
+                                                                <td colspan="6"><span>Numero de compte </span></td>
+                                                                <td>
+                                                                    <span t-field="o.acc_number"/>
+                                                                </td>
+
+                                                            </tr>
+                                                            <tr>
+                                                                <td colspan="6"><span>mode de paiement </span></td>
+                                                                <td>
+                                                                   <span t-field="o. partner_id.myp_id"/>
+                                                                </td>
+
+                                                            </tr>
+
+
+                                                 </tfoot>
+                                        </table>
+                                    </div>
+                           </div>
+
+
+
+
+
+        </div>
+        </div>
+
+      </t>
+      </t>
+
+    </template>
+
+
+
+</odoo>
+
+
+
+<t t-name="web.external_layout_standard">
+        <div t-attf-class="header o_company_#{company.id}_layout" t-att-style="report_header_style">
+            <div class="row">
+                <div class="col-5 mb4">
+                    <div class="row">
+                      <div class="col-5 mb4"><img t-if="company.logo" t-att-src="image_data_uri(company.logo)" style="max-height: 450px;" alt="Logo"/> </div>
+                      <div class="col-7 mb4">
+                          <p style=" margin: 0;">LA COMPAGNIE DU CAOUTCHOUC</p>
+                                                    <p style=" margin:0;">AMOIKONKRO/DAOUKRO</p>
+                                                     <p style="margin: 0;">18 BP 2897 ABIDJAN 18</p>
+                                                     <p style="margin: 0;">Côte d'Ivoire</p>
+                                                      <p style="margin: 0;">N°CC: 1832658 G</p>
+                                                      <p style="margin: 0;">Centre d'Imposition: DGE PLATEAU</p>
+                                                      <p style="margin: 0;">Rgime d'Imposition : REEL NORMAL</p>
+                                                      <p style="margin: 0;">RC : CI-DIM-2019-3-16</p>
+                                                        <p style="margin: 0;">Téléphone : 0022523536545</p>
+                                                        <p style="margin: 0;">Email : contact@lcc-ci.com</p>
+                      </div>
+                    </div>
+
+                </div>
+                <div class="col-7 text-end" style="margin-top:22px;" t-if="company.report_header" t-field="company.report_header" name="moto">Company tagline</div>
+            </div>
+            <div t-if="company.logo or company.report_header" class="row zero_min_height">
+                <div class="col-12">
+                    <div style="border-bottom: 1px solid black;"/>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-6" name="company_address">
+                    <ul class="list-unstyled" name="company_address_list">
+                        <li t-if="company.is_company_details_empty"><span t-field="company.partner_id" t-options="{&quot;widget&quot;: &quot;contact&quot;, &quot;fields&quot;: [&quot;address&quot;, &quot;name&quot;], &quot;no_marker&quot;: true}">
+                            <div class="bg-light border-1 rounded h-100 d-flex flex-column align-items-center justify-content-center p-4 w-100 opacity-75 text-muted text-center">
+                                <strong>Company address block</strong>
+                                <div>Contains the company address.</div>
+                            </div>
+                        </span></li>
+                        <li t-else="">
+                            <span t-field="company.company_details">
+                                <div class="bg-light border-1 rounded h-100 d-flex flex-column align-items-center justify-content-center p-4 w-100 opacity-75 text-muted text-center">
+                                    <strong>Company details block</strong>
+                                    <div>Contains the company details.</div>
+                                </div>
+                            </span>
+                        </li>
+                        <li t-if="not forced_vat"/>
+                        <li t-else="">
+                            <t t-esc="company.country_id.vat_label or 'Tax ID'">Tax ID</t>:
+                            <span t-esc="forced_vat">US12345671</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div t-attf-class="article o_report_layout_standard o_company_#{company.id}_layout {{  'o_report_layout_background' if company.layout_background in ['Geometric', 'Custom']  else  '' }}" t-attf-style="background-image: url({{ 'data:image/png;base64,%s' % company.layout_background_image.decode('utf-8') if company.layout_background_image and company.layout_background == 'Custom' else '/base/static/img/bg_background_template.jpg' if company.layout_background == 'Geometric' else ''}});" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id" t-att-data-oe-lang="o and o.env.context.get('lang')">
+            <div class="pt-5">
+                <!-- This div ensures that the address is not cropped by the header. -->
+                <t t-call="web.address_layout"/>
+            </div>
+            <t t-out="0"/>
+        </div>
+
+        <div t-attf-class="footer o_standard_footer o_company_#{company.id}_layout">
+            <div class="text-center" style="border-top: 1px solid black;">
+                <ul class="list-inline mb4">
+                    <div t-field="company.report_footer"/>
+                </ul>
+
+                <div t-if="report_type == 'pdf'" class="text-muted">
+                    Page: <span class="page"/> / <span class="topage"/>
+                </div>
+                <div t-if="report_type == 'pdf' and display_name_in_footer" class="text-muted">
+                    <span t-out="o.name">(document name)</span>
+                </div>
+            </div>
+        </div>
+    </t>
+
+
+****************************************************************************
+<t t-name="web.external_layout_standard">
+        <div t-attf-class="header o_company_#{company.id}_layout" t-att-style="report_header_style">
+            <div class="row">
+                <div class="col-5 mb4">
+
+                      <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" style="max-height: 450px;" alt="Logo"/>
+                </div>
+                <div class="col-7 ">
+                    <p style=" margin: 0;">LA COMPAGNIE DU CAOUTCHOUC</p>
+                    <p style=" margin:0;">AMOIKONKRO/DAOUKRO</p>
+                    <p style="margin: 0;">18 BP 2897 ABIDJAN 18</p>
+                    <p style="margin: 0;">Côte d'Ivoire</p>
+                    <p style="margin: 0;">N°CC: 1832658 G</p>
+                    <p style="margin: 0;">Centre d'Imposition: DGE PLATEAU</p>
+                    <p style="margin: 0;">Rgime d'Imposition : REEL NORMAL</p>
+                    <p style="margin: 0;">RC : CI-DIM-2019-3-16</p>
+                    <p style="margin: 0;">Téléphone : 0022523536545</p>
+                    <p style="margin: 0;">Email : contact@lcc-ci.com</p>
+                </div>
+            </div>
+            <div t-if="company.logo or company.report_header" class="row zero_min_height">
+                <div class="col-12">
+                    <div style="border-bottom: 1px solid black;"/>
+                </div>
+            </div>
+
+        </div>
+
+        <div t-attf-class="article o_report_layout_standard o_company_#{company.id}_layout {{  'o_report_layout_background' if company.layout_background in ['Geometric', 'Custom']  else  '' }}" t-attf-style="background-image: url({{ 'data:image/png;base64,%s' % company.layout_background_image.decode('utf-8') if company.layout_background_image and company.layout_background == 'Custom' else '/base/static/img/bg_background_template.jpg' if company.layout_background == 'Geometric' else ''}});" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id" t-att-data-oe-lang="o and o.env.context.get('lang')">
+            <div class="pt-5">
+                <!-- This div ensures that the address is not cropped by the header. -->
+                <t t-call="web.address_layout"/>
+            </div>
+            <t t-out="0"/>
+        </div>
+
+        <div t-attf-class="footer o_standard_footer o_company_#{company.id}_layout">
+            <div class="text-center" style="border-top: 1px solid black;">
+                <ul class="list-inline mb4">
+                    <div t-field="company.report_footer"/>
+                </ul>
+
+                <div t-if="report_type == 'pdf'" class="text-muted">
+                    Page: <span class="page"/> / <span class="topage"/>
+                </div>
+                <div t-if="report_type == 'pdf' and display_name_in_footer" class="text-muted">
+                    <span t-out="o.name">(document name)</span>
+                </div>
+            </div>
+        </div>
+    </t>

@@ -329,7 +329,7 @@
             </header>
             <sheet>
                 <group>
-                    <field name="selection_id" options="{'no_create': True}"/>
+                    <field name="name"/>
                     <field name="group_id"/>
 
                     <field name="date_from"/>
@@ -345,9 +345,9 @@
                         <field name="total_weight"/>
 <!--                        <field name="price" invisible="1"/>-->
                         <field name="amount"/>
-                        <field name="acc_number" invisible="1"/>
-                            <field name="bank_id" invisible="1"/>
-                            <field name="myp_id" invisible="1"/>
+                        <field name="acc_number" />
+                            <field name="bank_id" />
+                            <field name="myp_id" />
                     </tree>
 
                 </field>
@@ -363,21 +363,52 @@
             <field name="arch" type="xml">
                 <tree string="Paiements des Primes">
                     <field name="group_id"/>
-                    <field name="selection_id"/>
                     <field name="date_from"/>
                     <field name="date_to"/>
                     <field name="state"/>
                 </tree>
             </field>
         </record>
+<!-- #########################################################################-->
+        <record id="prime_accounting_view_tree" model="ir.ui.view">
+            <field name="name">prime.plantation.tree</field>
+            <field name="model">prime.account.move</field>
+            <field name="arch" type="xml">
+                <tree string="Accounting" create="0" decoration-bf="type not in ('G','A')" limit="15000000">
+                    <field name="journal_code"/>
+                    <field name="payslip_date"/>
+                    <field name="number_move"/>
+                    <field name="invoice"/>
+                    <field name="ref"/>
+                    <field name="account_code"/>
+                    <!--field name="account_id" optional="hide"/-->
+                    <field name="partner_account"/>
+                    <field name="name"/>
+                    <field name="date_due"/>
+                    <field name="debit"/>
+                    <field name="credit"/>
+                    <field name="analytic"/>
+                    <field name="type"/>
+                </tree>
+            </field>
+        </record>
+        <record id="action_prime_accounting" model="ir.actions.act_window">
+             <field name="name">Journal Prime</field>
+             <field name="res_model">prime.account.move</field>
+             <field name="view_mode">tree</field>
+        </record>
+         This Menu Item must have a parent and an action
+        <menuitem id="menu_prime_accounting" parent="prime_exceptionnelle_menu" action="action_prime_accounting" sequence="10"/>
 
+<!--        ############################################################-->
 
         <record id="view_validated_payment_tree" model="ir.ui.view">
             <field name="name">validated.payment.tree</field>
             <field name="model">validated.payment</field>
             <field name="arch" type="xml">
                 <tree string="Paiements Validés" limit="15000000">
-                    <field name="payment_id"/>
+
+                    <field name="date_range"/>
                     <field name="code_farmer"/>
                     <field name="farmer_id"/>
                     <field name="total_weight"/>
@@ -444,5 +475,8 @@
         </record>
 
         <menuitem id="planting_weight_menu" parent="menu_weigh" action="planting_weight_act_window" sequence="3"/>
+
+
+
     </data>
 </odoo>

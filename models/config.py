@@ -119,8 +119,8 @@ class PlantingPricingLine(models.Model):
 
     price_id = fields.Many2one(comodel_name='planting.pricing',string='Historique prix ',required=True, ondelete="cascade")
     group_id = fields.Many2one(comodel_name='group.group',string='Groupe planteur',required=True)
-    prix_apromac= fields.Float(string='prix apromac ', digits="Product Unit Of Measure", required=True,)
-    price = fields.Float(string='Prix ', digits="Product Unit Of Measure", required=True,)
+    prix_apromac = fields.Float(string='prix apromac ', digits="Product Unit Of Measure", required=True,)
+   # price = fields.Float(string='Prix ', digits="Product Unit Of Measure", required=True,)
    # < !--  ################ price1 10/09/24  ##############-->
   #  price1 = fields.Float(string='Prix NON EUDR', digits="Product Unit Of Measure", required=True,)
     price_driver = fields.Float(string='Transport (T)', digits="Product Unit Of Measure", required=True,)

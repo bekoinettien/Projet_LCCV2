@@ -78,56 +78,72 @@
             <field name="code">BASE</field>
             <field name="farmer">True</field>
         </record>
+        <record id="QT" model="planting.salary.rule.category">
+            <field name="name">QT</field>
+            <field name="code">QT</field>
+            <field name="farmer">True</field>
+        </record>
 
         <!--=============
            SALARY RULE
         ================-->
 
          <record id="hr_rule_price_base" model="planting.salary.rule">
-            <field name="name">Montant Fond de tasse EURD</field>
+            <field name="name">Prime EUDR</field>
             <field name="sequence" eval="5"/>
             <field name="code">PB</field>
             <field name="category_id" ref="plantation.BASE"/>
             <field name="condition_select">none</field>
             <field name="amount_select">code</field>
             <field name="farmer">True</field>
-            <field name="amount_python_compute">result = payslip.price * payslip.total_qty_eudr</field>
+            <field name="amount_python_compute">result = payslip.prime * payslip.total_qty_eudr</field>
         </record>
 <!--        mise a jour 10/09/24-->
         <record id="hr_rule_price_base1" model="planting.salary.rule">
-            <field name="name">Montant Fond de tasse Non EURD</field>
+            <field name="name">Prime NON EUDR</field>
             <field name="sequence" eval="6"/>
             <field name="code">PBD</field>
             <field name="category_id" ref="plantation.BASE"/>
             <field name="condition_select">none</field>
             <field name="amount_select">code</field>
             <field name="farmer">True</field>
-            <field name="amount_python_compute">result = payslip.price * payslip.total_qty_non_eudr</field>
+            <field name="amount_python_compute">result = payslip.prime1 * payslip.total_qty_non_eudr</field>
         </record>
 
-        <record id="hr_rule_prime" model="planting.salary.rule">
-            <field name="name">Prime EUDR</field>
-            <field name="sequence" eval="7"/>
-            <field name="code">PRIME</field>
-            <field name="category_id" ref="plantation.PRIME"/>
+        <record id="hr_rule_total_livre" model="planting.salary.rule">
+            <field name="name">Montant Apromac</field>
+            <field name="sequence" eval="1"/>
+            <field name="code">QT</field>
+            <field name="category_id" ref="plantation.QT"/>
             <field name="condition_select">none</field>
             <field name="amount_select">code</field>
-            <field name="amount_python_compute">result = payslip.prime * payslip.total_qty_eudr</field>
-            <field name="active">True</field>
             <field name="farmer">True</field>
+            <field name="amount_python_compute">result = payslip.prix_apromac * payslip.Total_poids</field>
         </record>
+
+<!--        <record id="hr_rule_prime" model="planting.salary.rule">-->
+<!--            <field name="name">Prime EUDR</field>-->
+<!--            <field name="sequence" eval="7"/>-->
+<!--            <field name="code">PRIME</field>-->
+<!--            <field name="category_id" ref="plantation.PRIME"/>-->
+<!--            <field name="condition_select">none</field>-->
+<!--            <field name="amount_select">code</field>-->
+<!--            <field name="amount_python_compute">result = payslip.prime * payslip.total_qty_eudr</field>-->
+<!--            <field name="active">True</field>-->
+<!--            <field name="farmer">True</field>-->
+<!--        </record>-->
 <!--        mise a jour 10/09/24-->
-         <record id="hr_rule_prime1" model="planting.salary.rule">
-                    <field name="name">Prime NON EUDR</field>
-                    <field name="sequence" eval="8"/>
-                    <field name="code">PRIME1</field>
-                    <field name="category_id" ref="plantation.PRIME"/>
-                    <field name="condition_select">none</field>
-                    <field name="amount_select">code</field>
-                    <field name="amount_python_compute">result = payslip.prime1 * payslip.total_qty_non_eudr</field>
-                    <field name="active">True</field>
-                    <field name="farmer">True</field>
-                </record>
+<!--         <record id="hr_rule_prime1" model="planting.salary.rule">-->
+<!--                    <field name="name">Prime NON EUDR</field>-->
+<!--                    <field name="sequence" eval="8"/>-->
+<!--                    <field name="code">PRIME1</field>-->
+<!--                    <field name="category_id" ref="plantation.PRIME"/>-->
+<!--                    <field name="condition_select">none</field>-->
+<!--                    <field name="amount_select">code</field>-->
+<!--                    <field name="amount_python_compute">result = payslip.prime1 * payslip.total_qty_non_eudr</field>-->
+<!--                    <field name="active">True</field>-->
+<!--                    <field name="farmer">True</field>-->
+<!--         </record>-->
 
         <!--=========================
             HR SALARY RULE CATEGORY Exceptionnelle-->
@@ -212,7 +228,7 @@
             <field name="amount_select">code</field>
             <field name="farmer">True</field>
              <field name="appears_on_payslip">False</field>
-            <field name="amount_python_compute">result = categories.BASE + categories.PRIME</field>
+            <field name="amount_python_compute">result = categories.BASE + categories.QT</field>
         </record>
 
         <record id="hr_rule_net" model="planting.salary.rule">

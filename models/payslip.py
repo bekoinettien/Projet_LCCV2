@@ -261,7 +261,7 @@ class planting_payslip(models.Model):
    # gains1 = fields.Float(string="Total gains NON EUDR")
     returned = fields.Float(string="Total retenues")
     price = fields.Float(string="Prix du produit")
-    prix_apromac = fields.Float(string="Prix Apromac")
+    prix_apromac = fields.Float(string="Prix Apromac",compute='compute_sheet', store=True)
    # < !--  ################ price1 10/09/24  ##############-->
    # price1 = fields.Float(string="Prix du produit NON EUDR")
     price_driver = fields.Float(string="Transport")
@@ -275,7 +275,9 @@ class planting_payslip(models.Model):
     total_qty_non_eudr = fields.Float(string="Total Poids NON EUDR", compute='compute_sheet', store=True)
     total_amount_eudr = fields.Float(string="Montant Total EUDR", compute='compute_sheet', store=True)
     total_amount_non_eudr = fields.Float(string="Montant Total NON EUDR", compute='compute_sheet', store=True)
+    total_amount_poids = fields.Float(string="Montant Total livré", compute='compute_sheet', store=True)
     Total_poids = fields.Float(string='Total General livré')
+
     @api.depends('line_pesee_ids.qty', 'line_pesee_ids.origine')
     def _compute_totals(self):
         for record in self:
@@ -677,7 +679,7 @@ class planting_payslip(models.Model):
 
             # Mettre à jour les prix de la fiche de paie
             payslip.update({
-                'price': res_price.price or 0.0,  # Prix pour EUDR
+                # 'price': res_price.price or 0.0,  # Prix pour EUDR
                 'prix_apromac': res_price.prix_apromac or 0.0,  # Prix APROMAC
                # 'price1': res_price.price1 or 0.0,  # Prix pour NON EUDR
                 'price_driver': res_price.price_driver or 0.0,
@@ -701,53 +703,35 @@ class planting_payslip(models.Model):
             for line in payslip.line_pesee_ids:
                 if line.origine == 'EUDR':
                     total_qty_eudr += line.qty
-                    total_amount_eudr += line.qty * payslip.price  # Calculer montant pour EUDR
+                    total_amount_eudr += line.qty * payslip.prime  # Calculer montant pour EUDR
                 elif line.origine == 'NON EUDR':
                     total_qty_non_eudr += line.qty
-                    total_amount_non_eudr += line.qty * payslip.price  # Calculer montant pour NON EUDR
+                    total_amount_non_eudr += line.qty * payslip.prime1  # Calculer montant pour NON EUDR
                    # total_amount_non_eudr += line.qty * payslip.price1  # Calculer montant pour NON EUDR
+
 
             # Supprimer les anciennes lignes de paie et ajouter les nouvelles
             if payslip.line_ids:
                 payslip.line_ids.unlink()
-            reslut = payslip.prime * payslip.total_qty_eudr
-            result1 = payslip.prime1 * payslip.total_qty_non_eudr
+            #reslut = payslip.prime * payslip.total_qty_eudr
+            #result1 = payslip.prime1 * payslip.total_qty_non_eudr
             TotalPoids = total_qty_eudr + total_qty_non_eudr
             resultTransport = payslip.price_driver * payslip.Total_poids
+            mont_livr = TotalPoids * payslip.prix_apromac
             payslip.write({
                 'line_ids': [(0, 0, line) for line in payslip._get_payslip_lines()],
                 'total_qty_eudr': total_qty_eudr,
                 'total_qty_non_eudr': total_qty_non_eudr,
                 'Total_poids': TotalPoids,
+                #'prix_apromac': prix_apromac,
+               # 'total_amount_livre': TotalPoids * prix_apromac,  # Montant total pour EUDR
                 'total_amount_eudr': total_amount_eudr,  # Montant total pour EUDR
                 'total_amount_non_eudr': total_amount_non_eudr,  # Montant total pour NON EUDR
-                'amount_net': (total_amount_eudr + total_amount_non_eudr + reslut+result1)-resultTransport,
+                'amount_net': (total_amount_eudr + total_amount_non_eudr+mont_livr)-resultTransport,
             })
 
         return True
 
-    # def compute_sheet(self):
-    #
-    #     sequence_obj = self.env['ir.sequence']
-    #
-    #     for payslip in self:
-    #         res_price = self.env['planting.pricing.line'].search([('group_id', '=',payslip.partner_id.group_id.id)], limit=1, order="date desc")
-    #         if not res_price :
-    #             raise exceptions.ValidationError('Aucun prix trouvé pour le groupe de planteur %s'%(payslip.partner_id.group_id.name))
-    #         payslip.price = res_price and res_price.price or 0.0
-    #         payslip.price1 = res_price and res_price.price1 or 0.0
-    #         payslip.price_driver = res_price and res_price.price_driver or 0.0
-    #         payslip.prime = res_price and res_price.prime or 0.0
-    #         number = payslip.number or sequence_obj.next_by_code('farmer.slip')
-    #         name = ('Fiche de paie %s pour %s') % (payslip.partner_id.name, format_date(self.env, payslip.date_from, date_format="MMMM y"))
-    #
-    #         # delete old payslip lines
-    #         total = sum(line.qty for line in payslip.line_pesee_ids)
-    #         if payslip.line_ids:
-    #             payslip.line_ids.unlink()
-    #         lines = [(0, 0, line) for line in payslip._get_payslip_lines()]
-    #         payslip.write({'line_ids': lines, 'number': number, 'name': name,'amount_pesee':total})
-    #     return True
 
 
 class hr_payslip_input(models.Model):

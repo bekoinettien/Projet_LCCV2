@@ -3,7 +3,9 @@ import base64
 import os
 import time
 from odoo.exceptions import UserError
+import logging
 
+_logger = logging.getLogger(__name__)
 
 class Weight(models.Model):
     _name = 'weight.weight'
@@ -124,6 +126,8 @@ class Prime(models.Model):
     farmer_ids = fields.Many2many("res.partner", string="Planteurs", required=False)
     line_selection_ids = fields.One2many(comodel_name='selection.selection', inverse_name='prime_id', tracking=True,
                                          string='Ligne de prix')
+    property_account_payable_id = fields.Many2one('account.account', string="Compte Fournisseur")
+
 
     @api.constrains('farmer_ids')
     def _check_unique_farmers(self):
@@ -186,8 +190,9 @@ class Paiement(models.Model):
     _name = 'paiement.paiement'
     _description = 'Paiement des primes'
 
+
     group_id = fields.Many2one('prime.prime', string="Groupe")
-    selection_id = fields.Many2one('selection.selection', string="Sélection")
+    name = fields.Char(string="Référence", required=False, default=lambda self: self.env['ir.sequence'].next_by_code('paiement.reference'))
     date_from = fields.Date(string="Date de début")
     date_to = fields.Date(string="Date de fin")
     payment_line_ids = fields.One2many(comodel_name='payment.line', inverse_name='payment_id', string="Lignes de Paiement")
@@ -197,39 +202,56 @@ class Paiement(models.Model):
         ('cancelled', 'Fermer')
     ], string='État', default='draft')
 
+
     @api.model
     def create(self, vals):
-        # Récupérer les dates de la sélection
-        selection = self.env['selection.selection'].browse(vals.get('selection_id'))
-        if not selection:
-            raise exceptions.ValidationError("Sélection invalide.")
-
-        # Vérifier l'existence d'un paiement pour le même groupe et la même période
         existing_payment = self.env['paiement.paiement'].search([
-            ('group_id', '=', selection.prime_id.id),
-            ('date_from', '<=', selection.datefin),
-            ('date_to', '>=', selection.datedebut)
+            ('group_id', '=', vals.get('group_id')),
+            ('date_from', '<=', vals.get('date_to')),
+            ('date_to', '>=', vals.get('date_from'))
         ], limit=1)
 
         if existing_payment:
-            raise exceptions.UserError("Le groupe a déjà été payé pour cette période.")
+            raise UserError("Le groupe a déjà été payé pour cette période.")
 
-        # Création du paiement
         return super(Paiement, self).create(vals)
 
-    @api.onchange('selection_id')
-    def _onchange_selection_id(self):
-        """Synchronise les informations de la sélection choisie."""
-        if self.selection_id:
-            self.group_id = self.selection_id.prime_id
-            self.date_from = self.selection_id.datedebut
-            self.date_to = self.selection_id.datefin
 
-            # Vider les lignes de paiement
-            self.payment_line_ids = [(5, 0, 0)]  # 5 = 'unlink', vide les lignes existantes
+    # @api.onchange('selection_id')
+    #     def _onchange_selection_id(self):
+    #         """Synchronise les informations de la sélection choisie."""
+    #         if self.selection_id:
+    #             self.group_id = self.selection_id.prime_id
+    #             self.date_from = self.selection_id.datedebut
+    #             self.date_to = self.selection_id.datefin
+    #
+    #             # Vider les lignes de paiement
+    #             self.payment_line_ids = [(5, 0, 0)]  # 5 = 'unlink', vide les lignes existantes
+    #
+    #             # Calculer les lignes de paiement après mise à jour
+    #             self._compute_payment_lines()
 
-            # Calculer les lignes de paiement après mise à jour
-            self._compute_payment_lines()
+    # def create_account_move(self, debit_account_id, debit, credit, line_type, name=False, number=0,
+    #                         analytic_account_id=False):
+    #     for record in self:
+    #         self.env['prime.account.move'].create({
+    #             'journal_code': "ACH_MP",
+    #             'payslip_date': record.create_date,
+    #             'invoice': record.payment_line_ids.farmer_id.code_farmer + "/" + record.date_from.strftime(
+    #                 '%d%m%Y') + "-" + record.date_to.strftime('%d%m%Y'),
+    #             'ref': str(number),
+    #             'account_code': line_type == "C" and record.payment_line_ids.farmer_id.property_account_payable_id.code or debit_account_id.code,
+    #             'partner_account': line_type == "C" and record.payment_line_ids.farmer_id.code_farmer or False,
+    #             'name': line_type == "C" and "ACHAT FONDS DE TASSE " + record.payment_line_ids.farmer_id.name + " " + record.date_from.strftime(
+    #                 '%d %m') + " au " + record.date_to.strftime('%d %m %Y') or name,
+    #             'date_due': record.date_from,
+    #             'debit': debit,
+    #             'credit': credit,
+    #             'analytic': analytic_account_id,  # Ajout du compte analytique ici
+    #             'type': line_type == "C" and "G" or line_type,
+    #         })
+
+
 
     @api.onchange('group_id', 'date_from', 'date_to')
     def _compute_payment_lines(self):
@@ -246,7 +268,11 @@ class Paiement(models.Model):
                 raise exceptions.UserError("Aucune prime active trouvée pour le groupe à cette période.")
 
             payment_lines = []
+            seen_farmers = set()  # Pour garder une trace des planteurs déjà traités
             for farmer in self.group_id.farmer_ids:
+                if farmer.id in seen_farmers:
+                    continue  # Ignorer si le planteur a déjà été traité
+
                 total_weight = sum(self.env['weight.weight'].search([
                     ('supplier_id', '=', farmer.id),
                     ('date', '>=', self.date_from),
@@ -271,12 +297,15 @@ class Paiement(models.Model):
                         'bank_id': bank_account.bank_id.id if bank_account else False,
                         'acc_number': bank_account.acc_number if bank_account else False,
                     }))
+
+                    # Ajouter le planteur à l'ensemble pour éviter les doublons
+                    seen_farmers.add(farmer.id)
+
             self.payment_line_ids = payment_lines
 
 
-
     def action_pay(self):
-        self.write({'state': 'paid'})
+       # self.write({'state': 'paid'})
         # Copier les lignes de paiement validées dans une autre vue liste
         validated_payment_model = self.env['validated.payment']
 
@@ -287,11 +316,72 @@ class Paiement(models.Model):
                 'total_weight': line.total_weight,
                 'price': line.price,
                 'amount': line.amount,
-                'bank_id': line.bank_id,
+                'bank_id': line.bank_id.id if line.bank_id else False,
                 'myp_id': line.myp_id,
-                'acc_number': line.acc_number,
+                'acc_number': line.acc_number
             })
+        for record in self:
+            record.action_account_move()
+        return self.write({'state': 'paid'})
+       # self.create_account_move()
+            ########################################################################################
+    def create_account_move(self, debit_account_code, debit, credit, line_type, name=False, number=0, farmer_code=None):
+        """Créer une écriture comptable pour un planteur donné"""
+        move = self.env['prime.account.move'].create({
+            'journal_code': "ACH_MP",
+            'payslip_date': self.create_date,
+            'invoice': farmer_code or 'N/A',
+            'ref': str(number),
+            'account_code': line_type == "C" and self.env['res.partner'].search(
+                [('code_farmer', '=', farmer_code)]).property_account_payable_id.code or debit_account_code,
+            'partner_account': farmer_code,
+            'name': line_type == "C" and "PRIME EXCEPTIONNELLE " + name + " " + self.date_from.strftime(
+                '%d %m') + " au " + self.date_to.strftime('%d %m %Y') or name,
+            'date_due': self.date_from,
+            'debit': debit,
+            'credit': credit,
+            'analytic': line_type == "A" and "L0101000" or False,
+            'type': line_type == "C" and "G" or line_type,
+        })
+        _logger.info(f"Écriture comptable créée pour {name} : Débit {debit}, Crédit {credit}, Type {line_type}")
 
+    def action_account_move(self):
+        """Créer des écritures comptables par planteur avec trois lignes : Débit, Analytique, Crédit"""
+        config = self.env['config.payslip.planting'].search([], limit=1)
+
+        for record in self:
+            # Dictionnaire pour stocker les montants par planteur
+            for line in record.payment_line_ids:
+                farmer = line.farmer_id
+                farmer_code = line.farmer_id.code_farmer
+
+                # 1. Créer l'écriture de Débit pour le planteur
+                record.create_account_move(debit_account_code='6032111', debit=line.amount, credit=0, line_type="G",
+                                           name=farmer.name, number=config.number, farmer_code=farmer_code)
+
+                # 2. Créer l'écriture de Débit Analytique
+                record.create_account_move(debit_account_code='6032111', debit=line.amount, credit=0, line_type="A",
+                                           name=farmer.name, number=config.number, farmer_code=farmer_code)
+
+                # 3. Créer l'écriture de Crédit pour le produit 'fonds de tasse'
+                record.create_account_move(debit_account_code='6032111', debit=0, credit=line.amount, line_type="C",
+                                           name="PRIME EXCEPTIONNELLE " + farmer.name, number=config.number + 1,
+                                           farmer_code=farmer_code)
+                config.number = config.number + 2
+
+                _logger.info(
+                    f"Planteur: {farmer.name}, Débit: {line.amount}, Crédit: {line.amount}, Code Planteur: {farmer_code}")
+
+            # Incrémentation du numéro de configuration
+            config.number += 1
+
+    # def close_paiement(self):
+    #     """Ferme le paiement et effectue les écritures comptables"""
+    #     for record in self:
+    #         record.action_account_move()
+    #     return self.write({'state': 'paid'})
+
+        ###########################################################################################################
     def action_cancel(self):
         self.write({'state': 'cancelled'})
 
@@ -331,13 +421,53 @@ class PaymentLine(models.Model):
                continue  # Si le poids est inférieur au seuil, aucune prime n'est appliquée.
 
     @api.onchange('farmer_id')
-    def onchange_partner(self):
-        for ligne in self:
-            #if ligne.farmer_id.bank_ids:
-                # Assurez-vous de sélectionner le premier compte bancaire disponible
-                bank_account = ligne.farmer_id.bank_ids[:1]
-                ligne.acc_number = bank_account.acc_number
-                ligne.bank_id = bank_account.bank_id.id
+    def _onchange_farmer_id(self):
+        """Récupérer automatiquement la banque et le numéro de compte associés au planteur."""
+        if self.farmer_id:
+            # Trouver les informations bancaires du planteur sélectionné
+            bank_account = self.env['res.partner.bank'].search([
+                ('partner_id', '=', self.farmer_id.id)
+            ], limit=1)  # Récupérer le premier compte bancaire associé
+
+            # Renseigner la banque et le numéro de compte si trouvé
+            if bank_account:
+                self.bank_id = bank_account.bank_id.id
+                self.acc_number = bank_account.acc_number
+            else:
+                self.bank_id = False
+                self.acc_number = ''
+
+    @api.model
+    def create(self, vals):
+        """Empêcher la perte des informations bancaires lors de la création."""
+        # Récupérer les informations bancaires lors de la création de la ligne si elles ne sont pas définies
+        if vals.get('farmer_id') and not vals.get('bank_id') and not vals.get('acc_number'):
+            bank_account = self.env['res.partner.bank'].search([
+                ('partner_id', '=', vals['farmer_id'])
+            ], limit=1)
+
+            if bank_account:
+                vals['bank_id'] = bank_account.bank_id.id
+                vals['acc_number'] = bank_account.acc_number
+
+        return super(PaymentLine, self).create(vals)
+
+    def write(self, vals):
+        """S'assurer que les informations bancaires ne disparaissent pas lors de la modification."""
+        if vals.get('farmer_id') and not vals.get('bank_id') and not vals.get('acc_number'):
+            bank_account = self.env['res.partner.bank'].search([
+                ('partner_id', '=', vals['farmer_id'])
+            ], limit=1)
+
+            if bank_account:
+                vals['bank_id'] = bank_account.bank_id.id
+                vals['acc_number'] = bank_account.acc_number
+
+        return super(PaymentLine, self).write(vals)
+    ##################################################################
+
+
+    ##################################################################
 
 
 class ValidatedPayment(models.Model):
@@ -346,6 +476,7 @@ class ValidatedPayment(models.Model):
 
     name = fields.Char(string="Nom", required=True, default=lambda self: _('Nouveau'))
     payment_id = fields.Many2one('paiement.paiement', string="Paiement", required=True)
+    date_range = fields.Char(string="Plage de Dates", compute="_compute_date_range", store=False)
     farmer_id = fields.Many2one('res.partner', string="Planteur", domain="[('farmer','=',True)]", required=True)
     code_farmer= fields.Char(string="Matricule Planteur", related='farmer_id.code_farmer', required=True)
     total_weight = fields.Float(string="Poids Total", required=True)
@@ -355,223 +486,38 @@ class ValidatedPayment(models.Model):
     myp_id = fields.Many2one('plantation.myp', string="Mode de paiement", related="farmer_id.myp_id", readonly=True)
     acc_number = fields.Char('Numero compte', readonly=True)
 
-    # groupe de prime exceptionnelle
-# class Prime(models.Model):
-#
-#     _name ='prime.prime'
-#
-#     name = fields.Char('Groupe', required=True)
-#     seuil = fields.Integer('Seuil' ,required=True)
-#     price1 = fields.Integer('Pix N°1',required=True)
-#     price2 = fields.Integer('Pix N°2',required=True)
-#     farmer_ids = fields.Many2many("res.partner",string="Planteurs", required=False,)
-#     line_selection_ids = fields.One2many(comodel_name='selection.selection', inverse_name='prime_id', tracking=True,
-#                                      string='Ligne de prix')
-#
-#     @api.constrains('farmer_ids')
-#     def _check_unique_farmers(self):
-#         for record in self:
-#             # Vérifier si des planteurs de ce groupe sont présents dans un autre groupe
-#             for partner in record.farmer_ids:
-#                 if partner.prime_id and partner.prime_id != record.id:
-#                     raise exceptions.ValidationError(
-#                         f"Le planteur {partner.name} est déjà associé au groupe {partner.prime_id.name}.")
-#
-#     @api.model
-#     def create(self, vals):
-#         record = super(Prime, self).create(vals)
-#         record._update_partner_prime()
-#         return record
-#
-#     def write(self, vals):
-#         result = super(Prime, self).write(vals)
-#         self._update_partner_prime()
-#         return result
-#
-#     def _update_partner_prime(self):
-#         # Mettre à jour le champ prime_id pour les planteurs dans ce groupe
-#         for partner in self.farmer_ids:
-#             partner.prime_id = self.id
-#         # Réinitialiser le champ prime_id des planteurs qui ne sont plus dans ce groupe
-#         all_partners = self.env['res.partner'].search([('prime_id', '=', self.id)])
-#         for partner in all_partners:
-#             if partner not in self.farmer_ids:
-#                 partner.prime_id = False
-#  # gestion des selections des date et activation de prime exceptionnelle
-#
-# class Selection(models.Model):
-#     _name = 'selection.selection'
-#
-#     active = fields.Boolean(string='Activation', default=False)
-#     name = fields.Char(string='Période de prime', required=True)
-#     datedebut = fields.Date(string='Date de début', required=True)
-#     datefin = fields.Date(string='Date de fin', required=True)
-#     prime_id = fields.Many2one(comodel_name='prime.prime',string='Selectionner le groupe ',required=False)
-#     _sql_constraints = [
-#         ('date_check', 'CHECK (datedebut <= datefin)',
-#          "La date de début doit être antérieure ou égale à la date de fin."),
-#         ('unique_period', 'UNIQUE (prime_id, datedebut, datefin)',
-#          "Une période pour un groupe ne peut pas se chevaucher avec une autre.")
-#     ]
-#     # Garantit qu'une période de prime pour un groupe donné ne peut pas se
-#     #            chevaucher avec une autre période pour le même groupe. Cette contrainte empêche
-#     #            la duplication des périodes pour un même groupe
-#     @api.model
-#     def default_get(self, fields_list):
-#         res = super(Selection, self).default_get(fields_list)
-#         if 'datedebut' in fields_list and 'datefin' in fields_list:
-#             res['name'] = f"Période de prime du {res.get('datedebut')} au {res.get('datefin')}"
-#         return res
-#
-#     @api.onchange('datedebut', 'datefin')
-#     def _onchange_dates(self):
-#         if self.datedebut and self.datefin:
-#             self.name = f"Période de prime du {self.datedebut.strftime('%d/%m/%Y')} au {self.datefin.strftime('%d/%m/%Y')}"
-#
-#
-#
-# class Paiement(models.Model):
-#         _name = 'paiement.paiement'
-#         _description = 'Paiement des Planteurs'
-#
-#         name = fields.Char(string="Reference", required=True)
-#         group_id = fields.Many2one('prime.prime', string="Groupe", required=True)
-#         date_from = fields.Date(string=" Date Debut", required=True)
-#         date_to = fields.Date(string="Date Fin", required=True)
-#         payment_line_ids = fields.One2many('payment.line', 'payment_id', string="Payment Lines")
-#         state = fields.Selection([
-#             ('draft', 'Brouillon'),
-#             ('paid', 'Payé'),
-#             ('cancelled', 'Annulé')
-#         ], string='État', default='draft')
-#
-#         def action_pay(self):
-#             self.write({'state': 'paid'})
-#
-#         def action_cancel(self):
-#             self.write({'state': 'cancelled'})
-#
-#         def action_draft(self):
-#             self.write({'state': 'draft'})
-#
-#         @api.model
-#         def create(self, vals):
-#             existing_payment = self.env['paiement.paiement'].search([
-#                 ('group_id', '=', vals.get('group_id')),
-#                 ('date_from', '<=', vals.get('date_to')),
-#                 ('date_to', '>=', vals.get('date_from'))
-#             ], limit=1)
-#
-#             if existing_payment:
-#                 raise UserError("Le groupe a déjà été payé pour cette période.")
-#
-#             return super(Paiement, self).create(vals)
-#
-#         @api.onchange('group_id', 'date_from', 'date_to')
-#         def _compute_payment_lines(self):
-#             if self.group_id and self.date_from and self.date_to:
-#                 selections = self.env['selection.selection'].search([
-#                     ('prime_id', '=', self.group_id.id),
-#                     ('datedebut', '<=', self.date_to),
-#                     ('datefin', '>=', self.date_from),
-#                     ('active', '=', True)
-#                 ])
-#
-#                 if not selections:
-#                     raise UserError("Aucune prime active trouvée pour le groupe à cette période.")
-#
-#                 payment_lines = []
-#                 for farmer in self.group_id.farmer_ids:
-#                     total_weight = sum(self.env['weight.weight'].search([
-#                         ('supplier_id', '=', farmer.id),
-#                         ('date', '>=', self.date_from),
-#                         ('date', '<=', self.date_to)
-#                     ]).mapped('qty'))
-#
-#                     if total_weight == self.group_id.seuil:
-#                         price = self.group_id.price1
-#                     elif total_weight > self.group_id.seuil:
-#                         price = self.group_id.price2
-#                     else:
-#                         continue
-#
-#                     payment_lines.append((0, 0, {
-#                         'farmer_id': farmer.id,
-#                         'total_weight': total_weight,
-#                         'price': price,
-#                     }))
-#                 self.payment_line_ids = payment_lines
-#
-#
-#
-#
-# class PaymentLine(models.Model):
-#
-#     _name = 'payment.line'
-#     _description = 'Payment Line'
-#
-#     payment_id = fields.Many2one('paiement.paiement', string="Payment Reference", required=True)
-#     farmer_id = fields.Many2one('res.partner', string="Farmer", required=True)
-#     total_weight = fields.Float(string="Total Pesé", required=True)
-#     price = fields.Float(string="Prix", required=True)
-#     amount = fields.Float(string="Prme Exceptionnelle", compute="_compute_amount", store=True)
-#
-#     @api.depends('total_weight', 'price')
-#     def _compute_amount(self):
-#         for line in self:
-#             line.amount = line.total_weight * line.price
-#
+    @api.depends('payment_id.date_from', 'payment_id.date_to')
+    def _compute_date_range(self):
+        for record in self:
+            if record.payment_id:
+                start_date = record.payment_id.date_from
+                end_date = record.payment_id.date_to
+                record.date_range = f"{start_date} - {end_date}" if start_date and end_date else "N/A"
+            else:
+                record.date_range = "N/A"
 
-# *********************************************************************************
-# paiement prime exceptionnelle
-# class Paiement(models.Model):
-#
-#         _name = 'paiement.paiement'
-#         _description = 'Paiement des Planteurs'
-#         name = fields.Char(string="Reference", required=True)
-#         group_id = fields.Many2one('prime.prime', string="Groupe", required=True)
-#         date_from = fields.Date(string=" Date Debut", required=True)
-#         date_to = fields.Date(string="Date Fin", required=True)
-#         payment_line_ids = fields.One2many('payment.line', 'payment_id', string="Payment Lines")
-#
-#         @api.onchange('group_id', 'date_from', 'date_to')
-#         def _compute_payment_lines(self):
-#             if self.group_id and self.date_from and self.date_to:
-#                 # farmers = self.group_id.farmer_ids
-#                 # Récupère les périodes de prime associées au groupe
-#                 selections = self.env['selection.selection'].search([
-#                     ('prime_id', '=', self.group_id.id),
-#                     ('datedebut', '<=', self.date_to),
-#                     ('datefin', '>=', self.date_from),
-#                     ('active', '=', True)
-#                 ])
-#
-#                 if not selections:
-#                     raise UserError("Aucune prime activer trouvée pour le groupe à cette dates spécifiées.")
-#
-#                 payment_lines = []
-#                 for selection in selections:
-#                     farmers = self.group_id.farmer_ids
-#                 for farmer in farmers:
-#                     # Calcul du total des pesées pour la période spécifiée
-#                     total_weight = sum(self.env['weight.weight'].search([
-#                         ('supplier_id', '=', farmer.id),
-#                         ('date', '>=', self.date_from),
-#                         ('date', '<=', self.date_to)
-#                     ]).mapped('qty'))
-#                     # Application des conditions
-#                     if total_weight == self.group_id.seuil:
-#                         price = self.group_id.price1
-#                     elif total_weight > self.group_id.seuil:
-#                         price = self.group_id.price2
-#                     else:
-#
-#                         continue
-#                         # Si le poids est inférieur au seuil, on passe au suivant
-#                     # Ajout de la ligne de paiement
-#                     payment_lines.append((0, 0, {
-#                         'farmer_id': farmer.id,
-#                         'total_weight': total_weight,
-#                         'price': price,
-#                     }))
-#                 self.payment_line_ids = payment_lines
+
+
+class PrimeAccounting(models.Model):
+    _name = 'prime.account.move'
+    _description = 'Journal de Control'
+
+    journal_code = fields.Char("Code Journal")
+    date_due = fields.Date("Date d'écheance ")
+    payslip_date = fields.Date("Date pièce ")
+    invoice = fields.Char("N° Facture")
+    ref = fields.Char("Reference")
+    account_code = fields.Char("Compte Général")
+    #account_id = fields.Many2one('account.account',"Compte Général")
+    partner_account = fields.Char("Compte Tierce ")
+    name = fields.Char("Libelle")
+    type = fields.Char("Type ecriture")
+    analytic = fields.Char("Section Analytique")
+    number_move = fields.Char("N° Piece")
+    debit = fields.Float(string='Debit', required=False)
+    credit = fields.Float(string='Credit', required=False)
+    #ajouter 06/09/24
+
+
+
+

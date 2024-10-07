@@ -111,11 +111,11 @@
                                 <field name="line_ids" readonly="1">
                                     <tree>
                                         <field name="date"/>
-                                        <field name="price"/>
-
-                                        <field name="price_driver"/>
+                                        <field name="prix_apromac"/>
                                         <field name="prime"/>
                                         <field name="prime1"/>
+                                        <field name="price_driver"/>
+
                                     </tree>
                                 </field>
                             </page>

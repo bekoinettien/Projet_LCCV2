@@ -207,12 +207,11 @@
                                         <field name="date" />
                                         <field name="group_id"/>
                                         <field name="prix_apromac"/>
-                                        <field name="price"/>
-
+                                         <field name="prime"/>
+                                        <field name="prime1"/>
                                         <!--################ price1 10/09/24  ##############-->
                                         <field name="price_driver"/>
-                                        <field name="prime"/>
-                                        <field name="prime1"/>
+
 
                                     </tree>
                                 </field>
@@ -235,7 +234,7 @@
             <field name="arch" type="xml">
                 <graph string="ModelTitle">
                     <field name="date"/>
-                    <field name="price" type="measure"/>
+<!--                    <field name="price" type="measure"/>-->
                     <field name="prix_apromac" type="measure"/>
                     <!--################ price1 10/09/24  ##############-->
 
@@ -249,7 +248,7 @@
             <field name="arch" type="xml">
                 <pivot string="ModelTitle">
                     <field name="date" type="row"/>
-                    <field name="price" type="measure"/>
+<!--                    <field name="price" type="measure"/>-->
                     <field name="prix_apromac" type="measure"/>
                     <!--################ price1 10/09/24  ##############-->
 

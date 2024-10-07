@@ -32,6 +32,7 @@
         'views/rule.xml',
         'views/payslip.xml',
         'views/virement.xml',
+
         'report/report_farmer.xml',
         'report/payment_report.xml',
         'report/reports.xml',

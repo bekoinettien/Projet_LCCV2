@@ -72,6 +72,9 @@ access_validated_payment,validated_payment,model_validated_payment,plantation_ma
 access_planting_journal,planting_journal,model_planting_journal_control,plantation_agent,1,0,0,0
 access_planting_journal,planting_journal,model_planting_journal_control,plantation_payroll_manager,1,1,1,1
 access_planting_journal,planting_journal,model_planting_journal_control,plantation_manager,1,1,1,1
+access_prime_account_move,prime_account_move,model_prime_account_move,plantation_agent,1,0,0,0
+access_prime_account_move,prime_account_move,model_prime_account_move,plantation_payroll_manager,1,1,1,1
+access_prime_account_move,prime_account_move,model_prime_account_move,plantation_manager,1,1,1,1
 
 
 

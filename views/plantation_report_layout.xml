@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Définition de la mise en page personnalisée pour les rapports de plantation -->
+    <template id="external_layout">
+        <t t-name="plantation.external_layout">
+
+                <t t-set="o" t-value="doc"/>
+                <div class="header">
+                   <div class="row">
+                                         <div class="col-7">
+                                             <div class="row">
+                                                 <div class="col-5">
+                                                    <img src="/plantation/static/src/img/lcc.jpeg" alt="Logo" height="160px"/>
+                                                 </div>
+                                                 <div class="col-7">
+                                                    <p style=" margin: 0;">LA COMPAGNIE DU CAOUTCHOUC</p>
+                                                    <p style=" margin:0;">AMOIKONKRO/DAOUKRO</p>
+                                                     <p style="margin: 0;">18 BP 2897 ABIDJAN 18</p>
+                                                     <p style="margin: 0;">Côte d'Ivoire</p>
+                                                      <p style="margin: 0;">N°CC: 1832658 G</p>
+                                                      <p style="margin: 0;">Centre d'Imposition: DGE PLATEAU</p>
+                                                      <p style="margin: 0;">Rgime d'Imposition : REEL NORMAL</p>
+                                                      <p style="margin: 0;">RC : CI-DIM-2019-3-16</p>
+                                                        <p style="margin: 0;">Téléphone : 0022523536545</p>
+                                                        <p style="margin: 0;">Email : contact@lcc-ci.com</p>
+                                                        <hr style="margin-top: 15px;"/>
+                                                 </div>
+                                             </div>
+                                         </div>
+                                        <div class="col-5" style="border: 1px solid #000; padding: 10px; border-radius: 15px; " >
+                                                <div class="row" style="background-color: #DAD8E2; border-radius:15px ;">
+                                                    <h3 class="text-center" style="border: 1px solid #000;border-radius:15px; padding-top: 50px; padding-left: 20px; "> REVENU DU PLANTEUR</h3>
+
+                                                </div>
+<!--                                                <div class="row" style="background-color: #DAD8E2; border-radius:15px" >-->
+<!--                                                    <h4 class="text-center"  style="border: 1px solid #000;border-radius:15px ; padding-top: 50px; padding-left: 20px;" ><strong>Periode : <span t-field="o.date_from"/></strong> AU <strong> <span t-field="o.date_to"/></strong></h4>-->
+
+<!--                                                </div>-->
+
+                                        </div>
+
+                                </div>
+                </div>
+                <div class="footer">
+                    <div class="row">
+                        <div class="col-12 text-center">
+                            <p>Ce document est généré automatiquement par le système Odoo.</p>
+                        </div>
+                    </div>
+                </div>
+
+        </t>
+    </template>
+</odoo>
